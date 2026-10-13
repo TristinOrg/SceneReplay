@@ -139,15 +139,15 @@ Do not place complete animation formats or Unity Animator ownership in SceneRepl
 
 ### M7 — Engine adapters and export
 
-Status: Portable export scope done; multi-engine adapters out of current scope — [#8](https://github.com/TristinOrg/SceneReplay/issues/8). Unity Prefab compilation and adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
+Status: Portable export scope done; Unity is the first engine adapter. Cross-engine availability is a product goal, with additional adapters sequenced behind a shared conformance contract — [#8](https://github.com/TristinOrg/SceneReplay/issues/8). Unity Prefab compilation and initial adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
 
-Develop only after Core contracts stabilize:
+Develop in this order:
 
-1. finish Unity native Prefab compilation and asset metadata;
-2. define an adapter conformance suite;
-3. export geometry-preserving GLB with stable semantic node metadata;
-4. delegate FBX/USD conversion through an explicit, verified external toolchain;
-5. defer Godot and Unreal adapters until their toolchains and real consuming projects are available for end-to-end validation.
+1. complete the shared adapter conformance suite for stable IDs, hierarchy, transforms, semantic metadata, and round-tripping edits;
+2. use Unity as the reference implementation and validate conformance against its native Prefab workflow;
+3. add Three.js, Godot, and Unreal adapters incrementally, each with a real consuming project and end-to-end validation;
+4. export geometry-preserving GLB with stable semantic node metadata;
+5. delegate FBX/USD conversion through an explicit, verified external toolchain.
 
 ### M8 — SceneReplay Agent and MCP
 
@@ -175,7 +175,7 @@ MCP must remain a thin orchestration surface, not a second implementation of Sce
 
 ## Immediate continuation
 
-1. Define and validate the SceneReplay-to-Three.js mapping for stable IDs, hierarchy, transforms, supported semantic metadata, and round-tripping edits.
-2. Run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`.
-3. Create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.
-4. Defer additional engine adapters until a target project and end-to-end toolchain are explicitly selected.
+1. complete the engine-neutral adapter conformance contract for stable IDs, hierarchy, transforms, semantic metadata, and round-tripping edits;
+2. exercise that contract in Unity, then build adapters for Three.js, Godot, and Unreal against consuming projects;
+3. run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`;
+4. create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.

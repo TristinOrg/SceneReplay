@@ -11,7 +11,7 @@ See [ROADMAP.md](ROADMAP.md) for architecture and continuation instructions, and
 
 SceneReplay sits above runtime engines such as Three.js, Unity, Godot, and Unreal. An engine owns scene execution and rendering; SceneReplay preserves an asset's semantic structure and identity as it is authored, edited, validated, and adapted between tools. For example, an application could keep the ID of a robot's left arm stable while applying a patch to that part, then map the definition into its engine's object hierarchy.
 
-The current implementation provides the Schema and Core packages, a Unity adapter, the official Low Poly geometry backend, and GLB export. A Three.js adapter is a possible integration target, not an implemented package. SceneReplay does not render scenes or reconstruct assets from reference images, and it does not replace modeling tools. AI and other authoring tools can create or edit SceneReplay definitions, but no AI provider is required by the format or Core.
+The product goal is to make the same semantic asset usable across Unity, Unreal, Godot, Three.js, and other host tools through engine-specific adapters. The current implementation provides the Schema and Core packages, a Unity adapter, the official Low Poly geometry backend, and GLB export; adapters for the other engines are planned, not implemented. SceneReplay does not render scenes or reconstruct assets from reference images, and it does not replace modeling tools. AI and other authoring tools can create or edit SceneReplay definitions, but no AI provider is required by the format or Core.
 
 ## Release status
 
@@ -297,7 +297,7 @@ The responsibility boundary is:
 | Scene execution, rendering, camera, and application interaction | Host engine and application (for example, Three.js) |
 | Initial modeling or image-to-3D authoring | External authoring tools or AI providers |
 
-Three.js provides a scene and rendering runtime. SceneReplay addresses a different layer: a portable, semantically editable definition that an integration can map into a Three.js object hierarchy while retaining SceneReplay IDs and metadata. That adapter does not exist in this release; the implemented engine integration is Unity. SceneReplay itself does not render scenes, model arbitrary geometry, or reconstruct assets from reference images.
+Three.js provides a scene and rendering runtime. SceneReplay addresses a different layer: a portable, semantically editable definition that engine adapters map into host-native hierarchies while retaining SceneReplay IDs and metadata. Unity is the currently implemented engine integration; Three.js, Godot, and Unreal adapters remain planned. Each adapter must preserve the shared semantic contract rather than redefine it. SceneReplay itself does not render scenes, model arbitrary geometry, or reconstruct assets from reference images.
 
 Game Semantic Metadata is also portable. A `scenereplay.game-metadata/1.0` document binds sockets, grips, interaction and IK anchors, damage zones, collider rules, LOD membership, and gameplay tags to stable node IDs. Core validates those bindings; the Unity adapter compiles them into child transforms, native colliders, `LODGroup`, and a cached runtime manifest. This keeps gameplay intent readable and editable without placing Unity types in Core.
 
