@@ -106,6 +106,53 @@ namespace SceneReplay.Tests
                 d.Code == "shape.adapter.feature.required" && d.Message.Contains(ShapeAdapterFeatureIds.Hierarchy)));
         }
 
+        [Test]
+        public void GameMetadataConformanceValidatesStableNodeBindings()
+        {
+            ShapeDefinition definition = new("Example", new("root", "Root", ShapeTypes.Group));
+            ShapeGameMetadata metadata = new() { Id = "example-metadata" };
+            metadata.Anchors.Add(new ShapeSemanticAnchor
+            {
+                Id = "grip",
+                Role = "grip/primary",
+                NodeId = "root"
+            });
+            Target rootTarget = new("root", ForgeVector3.Zero);
+            HierarchyResolver resolver = new((rootTarget, string.Empty));
+
+            ShapeDiagnosticReport report = new ShapeAdapterConformanceValidator().Analyze(
+                definition,
+                metadata,
+                Descriptor(ShapeAdapterFeatureIds.GameMetadata),
+                resolver);
+
+            Assert.That(report.IsValid, Is.True);
+        }
+
+        [Test]
+        public void GameMetadataConformanceReportsUnknownNodeAndUnsupportedFeature()
+        {
+            ShapeDefinition definition = new("Example", new("root", "Root", ShapeTypes.Group));
+            ShapeGameMetadata metadata = new() { Id = "example-metadata" };
+            metadata.Anchors.Add(new ShapeSemanticAnchor
+            {
+                Id = "grip",
+                Role = "grip/primary",
+                NodeId = "missing-node"
+            });
+            Target rootTarget = new("root", ForgeVector3.Zero);
+            HierarchyResolver resolver = new((rootTarget, string.Empty));
+
+            ShapeDiagnosticReport report = new ShapeAdapterConformanceValidator().Analyze(
+                definition,
+                metadata,
+                Descriptor(),
+                resolver);
+
+            Assert.That(report.Diagnostics, Has.Some.Matches<ShapeDiagnostic>(d => d.Code == "shape.game.node.unknown"));
+            Assert.That(report.Diagnostics, Has.Some.Matches<ShapeDiagnostic>(d => d.Code == "shape.adapter.feature.unsupported"));
+        }
+
         private static ShapeAdapterDescriptor Descriptor() => new(
             "example/adapter",
             "example-engine",
@@ -117,6 +164,13 @@ namespace SceneReplay.Tests
                 ShapeAdapterFeatureIds.LocalTransforms
             },
             ShapeAdapterUnsupportedFeaturePolicy.Reject);
+
+        private static ShapeAdapterDescriptor Descriptor(string optionalFeature)
+        {
+            ShapeAdapterDescriptor descriptor = Descriptor();
+            descriptor.Features.Add(optionalFeature);
+            return descriptor;
+        }
 
         private sealed class Resolver : IShapeTransformResolver
         {

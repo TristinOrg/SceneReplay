@@ -42,6 +42,31 @@ namespace SceneReplay
             return new(diagnostics);
         }
 
+        /// <summary>
+        /// Validates game-semantic metadata against the source hierarchy and adapter capabilities.
+        /// </summary>
+        public ShapeDiagnosticReport Analyze(
+            ShapeDefinition definition,
+            ShapeGameMetadata metadata,
+            ShapeAdapterDescriptor descriptor,
+            IShapeHierarchyTransformResolver resolver)
+        {
+            ShapeDiagnosticReport hierarchyReport = Analyze(definition, descriptor, resolver);
+            List<ShapeDiagnostic> diagnostics = new(hierarchyReport.Diagnostics);
+            if (definition == null || !new ShapeDefinitionValidator().Analyze(definition).IsValid)
+                return new(diagnostics);
+
+            ShapeGameMetadataReport metadataReport = new ShapeGameMetadataAnalyzer().Analyze(definition, metadata);
+            foreach (ShapeDiagnostic diagnostic in metadataReport.Diagnostics.Diagnostics)
+                diagnostics.Add(diagnostic);
+
+            if (descriptor != null && descriptor.Features != null &&
+                !Supports(descriptor, ShapeAdapterFeatureIds.GameMetadata))
+                ReportUnsupportedFeature(descriptor, ShapeAdapterFeatureIds.GameMetadata, diagnostics);
+
+            return new(diagnostics);
+        }
+
         /// <summary>Checks resolution and reversible local-transform writes for a generated model.</summary>
         public ShapeDiagnosticReport Analyze(ShapeDefinition definition, IShapeTransformResolver resolver)
         {
