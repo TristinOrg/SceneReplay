@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added reversible ShapePatch transactions that return a deterministic inverse patch for undo.
 - Removed reference-image validation, image comparison, and reconstruction orchestration.
 - Added canonical biped Humanoid rig roles and engine-neutral required-role validation.
 - Added machine-readable definition diagnostics with stable codes and document paths.

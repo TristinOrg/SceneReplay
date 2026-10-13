@@ -201,7 +201,15 @@ else
     Report(result.Diagnostics);
 ```
 
-`ShapePatchApplier` works on a deep copy and publishes the result only after final validation succeeds. The source definition therefore remains unchanged after an invalid operation or invalid final model. `ShapeDefinitionValidator.Analyze` provides the same structured diagnostic format for complete documents, while `ShapeDefinitionDiffer.Compare` provides deterministic semantic changes for review, tests, and tooling.
+`ShapePatchApplier` works on a deep copy and publishes the result only after final validation succeeds. The source definition therefore remains unchanged after an invalid operation or invalid final model. For reversible edits, `ApplyWithInverse` returns the validated definition together with a reverse patch that can be stored for review or applied to undo the edit:
+
+```csharp
+ShapePatchTransaction transaction = new ShapePatchApplier().ApplyWithInverse(restored, patch);
+ShapeDefinition       edited      = transaction.Definition;
+ShapeDefinition       restoredAgain = new ShapePatchApplier().Apply(edited, transaction.InversePatch);
+```
+
+`ShapeDefinitionValidator.Analyze` provides the same structured diagnostic format for complete documents, while `ShapeDefinitionDiffer.Compare` provides deterministic semantic changes for review, tests, and tooling.
 
 Use a versioned `scenereplay.quality/1.0` policy as the acceptance boundary for a game-ready asset. A policy can require stable nodes, shape capabilities, a rig type, semantic rig roles, and structural complexity limits:
 

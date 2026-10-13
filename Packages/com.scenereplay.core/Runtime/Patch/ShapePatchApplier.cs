@@ -32,6 +32,38 @@ namespace SceneReplay
         }
 
         /// <summary>
+        /// Applies a patch atomically and returns a reverse patch that restores the source definition.
+        /// </summary>
+        public ShapePatchTransaction ApplyWithInverse(ShapeDefinition source, ShapePatchDocument patch)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (patch == null)
+                throw new ArgumentNullException(nameof(patch));
+
+            validator.Validate(source);
+            ValidateDocument(patch);
+
+            ShapeDefinition result = Clone(source);
+            List<ShapePatchOperation> inverseOperations = new();
+            for (int index = 0; index < patch.Operations.Count; index++)
+            {
+                ShapePatchOperation operation = patch.Operations[index];
+                ShapePatchOperation inverse = CreateInverse(result, operation, index);
+                ApplyOperation(result, operation, index);
+                inverseOperations.Add(inverse);
+            }
+
+            validator.Validate(result);
+            inverseOperations.Reverse();
+            ShapePatchDocument inversePatch = new();
+            foreach (ShapePatchOperation operation in inverseOperations)
+                inversePatch.Operations.Add(operation);
+
+            return new ShapePatchTransaction(result, inversePatch);
+        }
+
+        /// <summary>
         /// Attempts to apply a patch and converts authored failures into structured diagnostics.
         /// </summary>
         public ShapePatchResult TryApply(ShapeDefinition source, ShapePatchDocument patch)
@@ -87,6 +119,103 @@ namespace SceneReplay
                         index,
                         operation.NodeId);
             }
+        }
+
+        private static ShapePatchOperation CreateInverse(ShapeDefinition definition, ShapePatchOperation operation, int index)
+        {
+            if (operation == null)
+                throw Error("shape.patch.operation.required", "Patch operations cannot be null.", index);
+
+            switch (operation.Kind)
+            {
+                case ShapePatchOperationKind.AddNode:
+                    if (operation.Node == null)
+                        throw Error("shape.patch.node.required", "An add operation requires a node subtree.", index);
+                    return new ShapePatchOperation
+                    {
+                        Kind = ShapePatchOperationKind.RemoveNode,
+                        NodeId = operation.Node.Id
+                    };
+
+                case ShapePatchOperationKind.RemoveNode:
+                {
+                    ShapeNode target = RequireNode(definition.Root, operation.NodeId, index, "shape.patch.node");
+                    if (ReferenceEquals(target, definition.Root))
+                        throw Error("shape.patch.root.remove", "The root node cannot be removed.", index, operation.NodeId);
+
+                    ShapeNode parent = FindParent(definition.Root, target);
+                    return new ShapePatchOperation
+                    {
+                        Kind = ShapePatchOperationKind.AddNode,
+                        ParentId = parent.Id,
+                        SiblingIndex = parent.Children.IndexOf(target),
+                        Node = Clone(target)
+                    };
+                }
+
+                case ShapePatchOperationKind.MoveNode:
+                {
+                    ShapeNode target = RequireNode(definition.Root, operation.NodeId, index, "shape.patch.node");
+                    if (ReferenceEquals(target, definition.Root))
+                        throw Error("shape.patch.root.move", "The root node cannot be moved.", index, operation.NodeId);
+
+                    ShapeNode parent = FindParent(definition.Root, target);
+                    return new ShapePatchOperation
+                    {
+                        Kind = ShapePatchOperationKind.MoveNode,
+                        NodeId = target.Id,
+                        ParentId = parent.Id,
+                        SiblingIndex = parent.Children.IndexOf(target)
+                    };
+                }
+
+                case ShapePatchOperationKind.UpdateNode:
+                {
+                    ShapeNode target = RequireNode(definition.Root, operation.NodeId, index, "shape.patch.node");
+                    if (operation.Update == null)
+                        throw Error("shape.patch.update.required", "An update operation requires authored values.", index, target.Id);
+
+                    return new ShapePatchOperation
+                    {
+                        Kind = ShapePatchOperationKind.UpdateNode,
+                        NodeId = target.Id,
+                        Update = CaptureUpdate(target, operation.Update)
+                    };
+                }
+
+                default:
+                    throw Error(
+                        "shape.patch.operation.kind.unsupported",
+                        $"Unsupported patch operation kind '{operation.Kind}'.",
+                        index,
+                        operation.NodeId);
+            }
+        }
+
+        private static ShapeNodeUpdate CaptureUpdate(ShapeNode node, ShapeNodeUpdate requested)
+        {
+            ShapeNodeUpdate previous = new();
+            if (requested.Name != null)
+                previous.Name = node.Name;
+            if (requested.Type != null)
+                previous.Type = node.Type;
+            if (requested.Transform != null)
+                previous.Transform = Clone(node.Transform);
+            if (requested.Appearance != null)
+                previous.Appearance = Clone(node.Appearance);
+            if (requested.MirrorAxis.HasValue)
+                previous.MirrorAxis = node.MirrorAxis;
+            if (requested.Parameters != null)
+                previous.Parameters = new Dictionary<string, float>(node.Parameters, StringComparer.Ordinal);
+            if (requested.Profile != null)
+                previous.Profile = new List<ForgeVector2>(node.Profile);
+            if (requested.Path != null)
+                previous.Path = new List<ForgeVector3>(node.Path);
+            if (requested.ProfileSections != null)
+                previous.ProfileSections = Clone(node.ProfileSections);
+            if (requested.ProfileCageSections != null)
+                previous.ProfileCageSections = Clone(node.ProfileCageSections);
+            return previous;
         }
 
         private static void Add(ShapeDefinition definition, ShapePatchOperation operation, int index)

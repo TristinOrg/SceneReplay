@@ -11,3 +11,5 @@ Geometry implementations describe their authoring surface through `IShapeCapabil
 Semantic packages implement `ShapeTemplate<TSpecification>` to compile domain-readable input into a standard `ShapeDefinition`. `ShapeTemplateCatalog` caches exact-ID compiler lookup, while versioned descriptor documents expose the specification schema, category, tags, and required shape types without serializing compiler instances.
 
 `ShapeHumanoidRig` defines and validates the canonical role set for a full biped humanoid skeleton. It remains engine-neutral: the authored ShapeNode hierarchy provides the rest pose, while each engine adapter validates and maps the resulting transforms to its native avatar system.
+
+`ShapePatchApplier.ApplyWithInverse` applies a validated patch to a deep copy and returns both the new definition and a reverse patch. Tooling can persist that inverse alongside an AI-authored change to support deterministic undo without putting history storage or editor state in Core.

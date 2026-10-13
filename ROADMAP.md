@@ -66,6 +66,7 @@ Every milestone should include, where applicable:
 - Structured validation diagnostics — `56c82a3`.
 - Deterministic semantic definition diffs — `3ed6c1e`.
 - Atomic ShapePatch add/remove/move/update operations — `3a42cce`.
+- Reversible ShapePatch transactions that produce inverse operations for deterministic undo.
 - Patch JSON workflow — `960e53c`.
 - Declarative Quality Gate and structural metrics — `c80c2d9`.
 - Quality/Patch schemas and LLM correction loop — `3639fc6`.
@@ -174,8 +175,7 @@ MCP must remain a thin orchestration surface, not a second implementation of Sce
 
 ## Immediate continuation
 
-1. Keep `python tools/scenereplay.py repository` and `python tools/scenereplay.py verify` green as contracts evolve.
-2. Define and validate the SceneReplay-to-Three.js mapping for stable IDs, hierarchy, transforms, supported semantic metadata, and round-tripping edits.
-3. Run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`.
-4. Create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.
-5. Defer additional engine adapters until a target project and end-to-end toolchain are explicitly selected.
+1. Define and validate the SceneReplay-to-Three.js mapping for stable IDs, hierarchy, transforms, supported semantic metadata, and round-tripping edits.
+2. Run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`.
+3. Create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.
+4. Defer additional engine adapters until a target project and end-to-end toolchain are explicitly selected.

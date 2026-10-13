@@ -6,6 +6,7 @@ All notable repository-level changes are documented here. Package-specific detai
 
 ### Added
 
+- Reversible semantic patch transactions that return an inverse patch for undoing AI edits.
 - GLB 2.0 structural validation with optional external validator execution and machine-readable reports.
 - Auditable FBX/USD converter profiles that pin tool identity, version, license, formats, and command.
 
