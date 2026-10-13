@@ -17,37 +17,37 @@
       },
       "hash": "c14de1e6dc01ab42d2bb358730cff954bce0ce6b"
     },
-    "com.shapeforge.core": {
-      "version": "file:com.shapeforge.core",
+    "com.scenereplay.core": {
+      "version": "file:com.scenereplay.core",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.shapeforge.schema": "0.1.0"
+        "com.scenereplay.schema": "0.1.0"
       }
     },
-    "com.shapeforge.lowpoly": {
-      "version": "file:com.shapeforge.lowpoly",
+    "com.scenereplay.lowpoly": {
+      "version": "file:com.scenereplay.lowpoly",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.shapeforge.schema": "0.1.0",
-        "com.shapeforge.core": "0.1.0",
-        "com.shapeforge.unity": "0.1.0"
+        "com.scenereplay.schema": "0.1.0",
+        "com.scenereplay.core": "0.1.0",
+        "com.scenereplay.unity": "0.1.0"
       }
     },
-    "com.shapeforge.schema": {
-      "version": "file:com.shapeforge.schema",
+    "com.scenereplay.schema": {
+      "version": "file:com.scenereplay.schema",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.shapeforge.unity": {
-      "version": "file:com.shapeforge.unity",
+    "com.scenereplay.unity": {
+      "version": "file:com.scenereplay.unity",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.shapeforge.schema": "0.1.0",
-        "com.shapeforge.core": "0.1.0",
+        "com.scenereplay.schema": "0.1.0",
+        "com.scenereplay.core": "0.1.0",
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       }
     },

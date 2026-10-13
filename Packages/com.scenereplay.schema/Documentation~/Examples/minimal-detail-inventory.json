@@ -1,0 +1,16 @@
+{
+  "schema": "scenereplay.detail-inventory/1.0",
+  "subject": "stylized fantasy hero",
+  "details": [
+    {
+      "id": "body", "name": "Body", "category": "anatomy", "parentId": "",
+      "targetNodeId": "model", "required": true, "repeatCount": 1,
+      "confidence": 1.0, "tags": ["base-pass"]
+    },
+    {
+      "id": "weapon", "name": "Weapon", "category": "accessory", "parentId": "body",
+      "targetNodeId": "weapon", "required": false, "repeatCount": 1,
+      "confidence": 0.7, "tags": ["accessory-pass"]
+    }
+  ]
+}

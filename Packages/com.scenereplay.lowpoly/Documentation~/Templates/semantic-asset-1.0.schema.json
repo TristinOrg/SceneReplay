@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SceneReplay Low Poly Semantic Asset 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "name", "width", "height", "depth", "detailScale"],
+  "properties": {
+    "schema": { "const": "scenereplay.lowpoly.semantic-asset/1.0" },
+    "name": { "type": "string", "minLength": 1 },
+    "width": { "type": "number", "minimum": 0.1, "maximum": 10 },
+    "height": { "type": "number", "minimum": 0.1, "maximum": 10 },
+    "depth": { "type": "number", "minimum": 0.1, "maximum": 10 },
+    "detailScale": { "type": "number", "minimum": 0.1, "maximum": 10 }
+  }
+}

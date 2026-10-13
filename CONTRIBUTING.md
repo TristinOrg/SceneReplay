@@ -1,6 +1,6 @@
-# Contributing to ShapeForge
+# Contributing to SceneReplay
 
-ShapeForge welcomes focused issues and pull requests that preserve its engine-agnostic framework boundary.
+SceneReplay welcomes focused issues and pull requests that preserve its engine-agnostic framework boundary.
 
 ## Development requirements
 
@@ -10,7 +10,7 @@ ShapeForge welcomes focused issues and pull requests that preserve its engine-ag
 
 ## Architecture rules
 
-- Keep `ShapeForge.Schema` and `ShapeForge.Core` free of Unity, render-pipeline, concrete-style, and AI-provider dependencies.
+- Keep `SceneReplay.Schema` and `SceneReplay.Core` free of Unity, render-pipeline, concrete-style, and AI-provider dependencies.
 - Add concrete geometry and style behavior outside Core.
 - Preserve stable node IDs and editable generated hierarchies.
 - Keep Runtime, Editor, and test assemblies separate.
@@ -31,4 +31,4 @@ Changes to published JSON contracts must remain versioned. Breaking contract cha
 
 ## Contribution licensing
 
-ShapeForge is dual-licensed. By submitting a contribution, you represent that you have the right to submit it and grant Tristin Wen a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, reproduce, modify, distribute, sublicense, and relicense the contribution under the project's open-source and commercial licenses. Do not submit code whose license is incompatible with these terms.
+SceneReplay is dual-licensed. By submitting a contribution, you represent that you have the right to submit it and grant Tristin Wen a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, reproduce, modify, distribute, sublicense, and relicense the contribution under the project's open-source and commercial licenses. Do not submit code whose license is incompatible with these terms.

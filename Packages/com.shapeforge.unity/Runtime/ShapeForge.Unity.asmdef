@@ -1,9 +1,0 @@
-{
-  "name": "ShapeForge.Unity",
-  "rootNamespace": "ShapeForge.Unity",
-  "references": [
-    "ShapeForge.Schema",
-    "ShapeForge.Core",
-    "Unity.Newtonsoft.Json"
-  ]
-}

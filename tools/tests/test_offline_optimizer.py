@@ -1,9 +1,9 @@
 import unittest
 
-from tools.shapeforge_offline_optimizer import discover_parameters, optimize_model
+from tools.scenereplay_offline_optimizer import discover_parameters, optimize_model
 
 
-class ShapeForgeOfflineOptimizerTests(unittest.TestCase):
+class SceneReplayOfflineOptimizerTests(unittest.TestCase):
     def test_staged_search_improves_transform_parameter_and_profile(self):
         model = {"root": {
             "id": "root",

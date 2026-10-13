@@ -31,4 +31,4 @@ All notable repository-level changes are documented here. Package-specific detai
 
 - The experimental character-specific LLM reference pipeline, replaced by generic reference contracts and mapping.
 
-[0.1.0]: https://github.com/TristinOrg/ShapeForge/releases/tag/v0.1.0
+[0.1.0]: https://github.com/TristinOrg/SceneReplay/releases/tag/v0.1.0

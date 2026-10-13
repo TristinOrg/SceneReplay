@@ -1,0 +1,10 @@
+{
+  "name": "SceneReplay.Core.Editor",
+  "rootNamespace": "SceneReplay.Editor",
+  "references": [
+    "SceneReplay.Core"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

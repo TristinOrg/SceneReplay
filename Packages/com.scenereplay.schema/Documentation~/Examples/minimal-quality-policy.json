@@ -1,0 +1,10 @@
+{
+  "schema": "scenereplay.quality/1.0",
+  "id": "example/runtime-prop",
+  "requiredRigType": "",
+  "requiredNodeIds": ["interaction/socket"],
+  "requiredShapeTypes": [],
+  "requiredRigRoles": [],
+  "maximumNodeCount": 64,
+  "maximumHierarchyDepth": 8
+}

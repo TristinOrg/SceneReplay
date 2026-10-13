@@ -4,10 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools.shapeforge_external_export import export_external, export_with_profile
+from tools.scenereplay_external_export import export_external, export_with_profile
 
 
-class ShapeForgeExternalExportTests(unittest.TestCase):
+class SceneReplayExternalExportTests(unittest.TestCase):
     def test_converter_receives_literal_paths_and_output_is_verified(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -44,7 +44,7 @@ class ShapeForgeExternalExportTests(unittest.TestCase):
             profile = root / "converter.json"
             source.write_bytes(b"glb")
             profile.write_text(json.dumps({
-                "schema": "shapeforge.converter-profile/1.0",
+                "schema": "scenereplay.converter-profile/1.0",
                 "id": "test/copy", "version": "1.2.3", "license": "MIT",
                 "formats": ["usda"],
                 "command": [sys.executable, "-c", "import pathlib,sys;pathlib.Path(sys.argv[2]).write_bytes(pathlib.Path(sys.argv[1]).read_bytes())", "{input}", "{output}"],
@@ -63,7 +63,7 @@ class ShapeForgeExternalExportTests(unittest.TestCase):
             profile = root / "converter.json"
             source.write_bytes(b"glb")
             profile.write_text(json.dumps({
-                "schema": "shapeforge.converter-profile/1.0",
+                "schema": "scenereplay.converter-profile/1.0",
                 "id": "test/copy", "version": "1", "license": "MIT",
                 "formats": ["fbx"], "command": ["tool", "{input}", "{output}"],
             }), encoding="utf-8")

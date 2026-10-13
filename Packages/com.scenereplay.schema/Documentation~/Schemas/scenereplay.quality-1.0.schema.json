@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/TristinOrg/SceneReplay/v0.1.0/Packages/com.scenereplay.schema/Documentation~/Schemas/scenereplay.quality-1.0.schema.json",
+  "title": "SceneReplay Quality Policy 1.0",
+  "description": "Declarative semantic and structural acceptance requirements for a generated game asset.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "requiredRigType",
+    "requiredNodeIds",
+    "requiredShapeTypes",
+    "requiredRigRoles",
+    "maximumNodeCount",
+    "maximumHierarchyDepth"
+  ],
+  "properties": {
+    "schema": { "const": "scenereplay.quality/1.0" },
+    "id": { "type": "string", "minLength": 1 },
+    "requiredRigType": { "type": "string" },
+    "requiredNodeIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "requiredShapeTypes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "requiredRigRoles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "maximumNodeCount": { "type": "integer", "minimum": 0 },
+    "maximumHierarchyDepth": { "type": "integer", "minimum": 0 }
+  }
+}

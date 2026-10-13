@@ -1,0 +1,32 @@
+{
+  "schema": "scenereplay.game-metadata/1.0",
+  "id": "example/prop-gameplay",
+  "anchors": [
+    {
+      "id": "primary-grip",
+      "role": "game/hand-grip",
+      "nodeId": "model",
+      "transform": {
+        "position": { "x": 0, "y": 0, "z": 0 },
+        "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 }
+      },
+      "tags": ["right-hand"]
+    }
+  ],
+  "damageZones": [],
+  "colliders": [
+    {
+      "id": "body-collider",
+      "nodeId": "model",
+      "kind": "box",
+      "isTrigger": false,
+      "center": { "x": 0, "y": 0, "z": 0 },
+      "size": { "x": 1, "y": 1, "z": 1 },
+      "radius": 0.5,
+      "height": 1
+    }
+  ],
+  "lods": [],
+  "tags": ["prop"]
+}

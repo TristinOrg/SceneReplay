@@ -1,9 +1,0 @@
-{
-  "name": "ShapeForge.LowPoly",
-  "rootNamespace": "ShapeForge.LowPoly",
-  "references": [
-    "ShapeForge.Schema",
-    "ShapeForge.Core",
-    "ShapeForge.Unity"
-  ]
-}

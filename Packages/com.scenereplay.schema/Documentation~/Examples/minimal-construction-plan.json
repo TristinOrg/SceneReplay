@@ -1,0 +1,31 @@
+{
+  "schema": "scenereplay.construction-plan/1.0",
+  "id": "hero/build-1",
+  "baseRevision": "hero/revision-0",
+  "passes": [
+    {
+      "id": "structure",
+      "name": "Structure",
+      "kind": "structure",
+      "state": "pending",
+      "dependsOn": [],
+      "patch": {
+        "schema": "scenereplay.patch/1.0",
+        "operations": []
+      },
+      "qualityPolicyId": "hero/structure"
+    },
+    {
+      "id": "details",
+      "name": "Details",
+      "kind": "details",
+      "state": "pending",
+      "dependsOn": ["structure"],
+      "patch": {
+        "schema": "scenereplay.patch/1.0",
+        "operations": []
+      },
+      "qualityPolicyId": "hero/details"
+    }
+  ]
+}

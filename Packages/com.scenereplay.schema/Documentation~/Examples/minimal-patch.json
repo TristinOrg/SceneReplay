@@ -1,0 +1,14 @@
+{
+  "schema": "scenereplay.patch/1.0",
+  "operations": [
+    {
+      "kind": "updateNode",
+      "nodeId": "model",
+      "parentId": "",
+      "siblingIndex": -1,
+      "update": {
+        "name": "Updated Model"
+      }
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools.shapeforge_glb_validate import BIN_CHUNK, GLB_MAGIC, JSON_CHUNK, validate_glb
+from tools.scenereplay_glb_validate import BIN_CHUNK, GLB_MAGIC, JSON_CHUNK, validate_glb
 
 
 def write_glb(path: Path, document: dict, binary: bytes = b"") -> None:
@@ -18,7 +18,7 @@ def write_glb(path: Path, document: dict, binary: bytes = b"") -> None:
     path.write_bytes(struct.pack("<III", GLB_MAGIC, 2, 12 + len(chunks)) + chunks)
 
 
-class ShapeForgeGlbValidationTests(unittest.TestCase):
+class SceneReplayGlbValidationTests(unittest.TestCase):
     def test_reports_structure_and_runs_external_validator(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "model.glb"

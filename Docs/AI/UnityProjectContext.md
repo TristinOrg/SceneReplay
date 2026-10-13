@@ -4,7 +4,7 @@
 
 ## Project Summary
 
-- Project root: `D:/git/ShapeForge`
+- Project root: `D:/git/SceneReplay`
 - Purpose: semantic intermediate layer between AI-authored 3D intent and engine-native assets; Low Poly is the first implementation.
 - Last analyzed: 2026-07-29
 - Last analyzed commit: `ef20d77`
@@ -29,10 +29,10 @@
 | Path | Purpose | Confidence | Evidence |
 | --- | --- | --- | --- |
 | `Assets/Scenes` | Default Unity sample scene | Confirmed | repository files |
-| `Packages/com.shapeforge.core` | Engine-neutral validation and style resolution | Confirmed | package manifest |
-| `Packages/com.shapeforge.schema` | Engine-agnostic versioned data contracts | Confirmed | package manifest |
-| `Packages/com.shapeforge.unity` | Unity generation and JSON adapter | Confirmed | package manifest |
-| `Packages/com.shapeforge.lowpoly` | Official Low Poly implementation | Confirmed | package manifest |
+| `Packages/com.scenereplay.core` | Engine-neutral validation and style resolution | Confirmed | package manifest |
+| `Packages/com.scenereplay.schema` | Engine-agnostic versioned data contracts | Confirmed | package manifest |
+| `Packages/com.scenereplay.unity` | Unity generation and JSON adapter | Confirmed | package manifest |
+| `Packages/com.scenereplay.lowpoly` | Official Low Poly implementation | Confirmed | package manifest |
 | `Docs/AI` | Concise persistent project context | Confirmed | this document |
 
 ## Assembly Boundaries
@@ -59,12 +59,12 @@ Schema provides versioned engine-agnostic shape, style, patch, construction, qua
 
 - Unity Test Framework is installed.
 - First-party EditMode tests cover fluent authoring, published JSON contracts, cached style inheritance, validated capability and semantic-template discovery/export, runtime generation, prepared count- and time-budgeted batches, hierarchy adaptation, validation, lifecycle-safe appearance, shared render resources, procedural geometry including independent profile cages, remaining presets, and motion-ready pivots.
-- `ShapeForge > Diagnostics > Benchmark JSON Generation` measures 200 alternating Table and Robot JSON generations, managed heap growth, and shared render-resource counts without saving generated objects.
+- `SceneReplay > Diagnostics > Benchmark JSON Generation` measures 200 alternating Table and Robot JSON generations, managed heap growth, and shared render-resource counts without saving generated objects.
 - The benchmark reports JSON parsing and prepared-definition generation separately. Repeated runtime models should call `LowPolyModelGenerator.ParseJson` once and reuse the validated definition.
 - Prepared batches use `UnityShapeGenerationPlan` to validate an immutable definition once before repeated generation.
 - `LowPolyGenerationBatch` supports explicit model-count and elapsed-time step budgets without coroutines or global scheduling state.
 - GitHub Actions validates package versions and dependencies, JSON syntax, release-pinned Schema IDs, required `.meta` files, release documents, and the Schema/Core engine boundary without requiring a Unity license.
-- The `v0.1.0` release baseline passed all 77 EditMode tests in an isolated Unity 2022.3.62f3 project. No first-party PlayMode or player-build suite exists because ShapeForge currently ships packages rather than a player application.
+- The `v0.1.0` release baseline passed all 77 EditMode tests in an isolated Unity 2022.3.62f3 project. No first-party PlayMode or player-build suite exists because SceneReplay currently ships packages rather than a player application.
 
 ## Available Unity Tooling
 

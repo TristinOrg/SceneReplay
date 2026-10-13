@@ -1,0 +1,14 @@
+{
+  "name": "SceneReplay.LowPoly.Editor",
+  "rootNamespace": "SceneReplay.LowPoly.Editor",
+  "references": [
+    "SceneReplay.Schema",
+    "SceneReplay.Core",
+    "SceneReplay.Unity",
+    "SceneReplay.Unity.Editor",
+    "SceneReplay.LowPoly"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

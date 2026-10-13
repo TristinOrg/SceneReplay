@@ -1,0 +1,12 @@
+{
+  "name": "SceneReplay.Unity.Editor",
+  "rootNamespace": "SceneReplay.Unity.Editor",
+  "references": [
+    "SceneReplay.Schema",
+    "SceneReplay.Core",
+    "SceneReplay.Unity"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}

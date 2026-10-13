@@ -1,0 +1,25 @@
+{
+  "name": "com.scenereplay.unity",
+  "version": "0.1.0",
+  "displayName": "SceneReplay Unity Adapter",
+  "description": "Unity generation and JSON adapters for engine-agnostic SceneReplay contracts.",
+  "unity": "2022.3",
+  "documentationUrl": "https://github.com/TristinOrg/SceneReplay/tree/v0.1.0/Packages/com.scenereplay.unity",
+  "changelogUrl": "https://github.com/TristinOrg/SceneReplay/blob/v0.1.0/Packages/com.scenereplay.unity/CHANGELOG.md",
+  "licensesUrl": "https://github.com/TristinOrg/SceneReplay/blob/v0.1.0/LICENSE.md",
+  "keywords": [
+    "procedural-modeling",
+    "unity",
+    "json"
+  ],
+  "dependencies": {
+    "com.scenereplay.schema": "0.1.0",
+    "com.scenereplay.core": "0.1.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "author": {
+    "name": "Tristin Wen",
+    "email": "Tristin_Wen@outlook.com",
+    "url": "https://github.com/TristinOrg"
+  }
+}

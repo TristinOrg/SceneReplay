@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/TristinOrg/SceneReplay/v0.1.0/Packages/com.scenereplay.schema/Documentation~/Schemas/scenereplay.patch-1.0.schema.json",
+  "title": "SceneReplay Patch 1.0",
+  "description": "An ordered set of atomic edits addressed by stable SceneReplay node IDs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "operations"],
+  "properties": {
+    "schema": { "const": "scenereplay.patch/1.0" },
+    "operations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/operation" }
+    }
+  },
+  "$defs": {
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "nodeId", "parentId", "siblingIndex"],
+      "properties": {
+        "kind": { "enum": ["addNode", "removeNode", "moveNode", "updateNode"] },
+        "nodeId": { "type": "string" },
+        "parentId": { "type": "string" },
+        "siblingIndex": { "type": "integer", "minimum": -1 },
+        "node": { "$ref": "scenereplay.shape-1.0.schema.json#/$defs/node" },
+        "update": { "$ref": "#/$defs/nodeUpdate" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "addNode" } } },
+          "then": {
+            "required": ["node"],
+            "properties": { "parentId": { "minLength": 1 } }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "removeNode" } } },
+          "then": { "properties": { "nodeId": { "minLength": 1 } } }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "moveNode" } } },
+          "then": {
+            "properties": {
+              "nodeId": { "minLength": 1 },
+              "parentId": { "minLength": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "updateNode" } } },
+          "then": {
+            "required": ["update"],
+            "properties": { "nodeId": { "minLength": 1 } }
+          }
+        }
+      ]
+    },
+    "nodeUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "transform": { "$ref": "scenereplay.shape-1.0.schema.json#/$defs/transform" },
+        "appearance": { "$ref": "scenereplay.shape-1.0.schema.json#/$defs/appearance" },
+        "mirrorAxis": { "enum": ["none", "x", "y", "z"] },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        },
+        "profile": {
+          "type": "array",
+          "items": { "$ref": "scenereplay.shape-1.0.schema.json#/$defs/vector2" }
+        },
+        "path": {
+          "type": "array",
+          "items": { "$ref": "scenereplay.shape-1.0.schema.json#/$defs/vector3" }
+        },
+        "profileSections": {
+          "type": "array",
+          "items": { "$ref": "scenereplay.shape-1.0.schema.json#/$defs/profileSection" }
+        },
+        "profileCageSections": {
+          "type": "array",
+          "items": { "$ref": "scenereplay.shape-1.0.schema.json#/$defs/profileCageSection" }
+        }
+      }
+    }
+  }
+}

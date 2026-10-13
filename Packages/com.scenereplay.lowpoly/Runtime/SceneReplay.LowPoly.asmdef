@@ -1,0 +1,9 @@
+{
+  "name": "SceneReplay.LowPoly",
+  "rootNamespace": "SceneReplay.LowPoly",
+  "references": [
+    "SceneReplay.Schema",
+    "SceneReplay.Core",
+    "SceneReplay.Unity"
+  ]
+}

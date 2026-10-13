@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate release-critical ShapeForge package structure without requiring Unity."""
+"""Validate release-critical SceneReplay package structure without requiring Unity."""
 
 from __future__ import annotations
 
@@ -9,16 +9,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGES = {
-    "com.shapeforge.schema": {},
-    "com.shapeforge.core": {"com.shapeforge.schema": "0.1.0"},
-    "com.shapeforge.unity": {
-        "com.shapeforge.schema": "0.1.0",
-        "com.shapeforge.core": "0.1.0",
+    "com.scenereplay.schema": {},
+    "com.scenereplay.core": {"com.scenereplay.schema": "0.1.0"},
+    "com.scenereplay.unity": {
+        "com.scenereplay.schema": "0.1.0",
+        "com.scenereplay.core": "0.1.0",
     },
-    "com.shapeforge.lowpoly": {
-        "com.shapeforge.schema": "0.1.0",
-        "com.shapeforge.core": "0.1.0",
-        "com.shapeforge.unity": "0.1.0",
+    "com.scenereplay.lowpoly": {
+        "com.scenereplay.schema": "0.1.0",
+        "com.scenereplay.core": "0.1.0",
+        "com.scenereplay.unity": "0.1.0",
     },
 }
 VERSION = "0.1.0"
@@ -76,12 +76,12 @@ def validate_json_files(errors: list[str]) -> None:
 
         if path.name.endswith(".schema.json"):
             schema_id = document.get("$id", "")
-            if "/ShapeForge/" in schema_id and f"/ShapeForge/{TAG}/" not in schema_id:
+            if "/SceneReplay/" in schema_id and f"/SceneReplay/{TAG}/" not in schema_id:
                 errors.append(f"Schema ID is not pinned to {TAG}: {path.relative_to(ROOT)}")
 
 
 def validate_engine_boundaries(errors: list[str]) -> None:
-    for package_name in ("com.shapeforge.schema", "com.shapeforge.core"):
+    for package_name in ("com.scenereplay.schema", "com.scenereplay.core"):
         runtime_root = ROOT / "Packages" / package_name / "Runtime"
         for path in runtime_root.rglob("*.cs"):
             source = path.read_text(encoding="utf-8")
@@ -104,7 +104,7 @@ def main() -> int:
             print(f"ERROR: {error}")
         return 1
 
-    print(f"ShapeForge {VERSION} repository validation passed.")
+    print(f"SceneReplay {VERSION} repository validation passed.")
     return 0
 
 

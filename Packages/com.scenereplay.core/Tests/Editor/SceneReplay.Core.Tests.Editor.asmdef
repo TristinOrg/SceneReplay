@@ -1,0 +1,14 @@
+{
+  "name": "SceneReplay.Core.Tests.Editor",
+  "rootNamespace": "SceneReplay.Tests",
+  "references": [
+    "SceneReplay.Schema",
+    "SceneReplay.Core"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

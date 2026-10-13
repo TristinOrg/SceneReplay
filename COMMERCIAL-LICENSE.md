@@ -1,6 +1,6 @@
-# ShapeForge Commercial Licensing
+# SceneReplay Commercial Licensing
 
-ShapeForge uses a dual-license model:
+SceneReplay uses a dual-license model:
 
 - `AGPL-3.0-or-later` for users who can comply with its open-source obligations;
 - a separately negotiated commercial license for proprietary use.

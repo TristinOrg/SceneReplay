@@ -1,0 +1,8 @@
+{
+  "name": "SceneReplay.Core",
+  "rootNamespace": "SceneReplay",
+  "references": [
+    "SceneReplay.Schema"
+  ],
+  "noEngineReferences": true
+}

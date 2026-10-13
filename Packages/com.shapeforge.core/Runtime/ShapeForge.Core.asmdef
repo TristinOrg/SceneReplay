@@ -1,8 +1,0 @@
-{
-  "name": "ShapeForge.Core",
-  "rootNamespace": "ShapeForge",
-  "references": [
-    "ShapeForge.Schema"
-  ],
-  "noEngineReferences": true
-}

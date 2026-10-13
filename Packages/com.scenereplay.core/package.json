@@ -1,0 +1,23 @@
+{
+  "name": "com.scenereplay.core",
+  "version": "0.1.0",
+  "displayName": "SceneReplay Core",
+  "description": "Engine-neutral semantic asset validation, editing, discovery, and generation contracts.",
+  "unity": "2022.3",
+  "documentationUrl": "https://github.com/TristinOrg/SceneReplay/tree/v0.1.0/Packages/com.scenereplay.core",
+  "changelogUrl": "https://github.com/TristinOrg/SceneReplay/blob/v0.1.0/Packages/com.scenereplay.core/CHANGELOG.md",
+  "licensesUrl": "https://github.com/TristinOrg/SceneReplay/blob/v0.1.0/LICENSE.md",
+  "keywords": [
+    "procedural-modeling",
+    "framework",
+    "generation"
+  ],
+  "dependencies": {
+    "com.scenereplay.schema": "0.1.0"
+  },
+  "author": {
+    "name": "Tristin Wen",
+    "email": "Tristin_Wen@outlook.com",
+    "url": "https://github.com/TristinOrg"
+  }
+}

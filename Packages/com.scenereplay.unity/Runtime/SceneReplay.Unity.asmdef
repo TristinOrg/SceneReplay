@@ -1,0 +1,9 @@
+{
+  "name": "SceneReplay.Unity",
+  "rootNamespace": "SceneReplay.Unity",
+  "references": [
+    "SceneReplay.Schema",
+    "SceneReplay.Core",
+    "Unity.Newtonsoft.Json"
+  ]
+}

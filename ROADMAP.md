@@ -1,21 +1,21 @@
-# ShapeForge Development Roadmap
+# SceneReplay Development Roadmap
 
 This document is the repository-owned continuation point for maintainers and coding agents. Update it in the same commit that completes or materially changes a milestone.
 
-The public execution board is [ShapeForge Roadmap](https://github.com/orgs/TristinOrg/projects/1). GitHub Issues are the task/status source of truth; this file preserves architectural context and acceptance criteria beside the code.
+The public execution board is [SceneReplay Roadmap](https://github.com/orgs/TristinOrg/projects/1). GitHub Issues are the task/status source of truth; this file preserves architectural context and acceptance criteria beside the code.
 
 ## Product direction
 
-ShapeForge is an engine-neutral semantic intermediate layer for AI-authored 3D assets:
+SceneReplay is an engine-neutral semantic intermediate layer for AI-authored 3D assets:
 
 ```text
 AI / Authoring Tool / Existing Asset
-                -> ShapeForge Semantic Definition
+                -> SceneReplay Semantic Definition
                 -> Validate / Diff / Patch
                 -> Engine Adapter / Portable Asset
 ```
 
-ShapeForge owns stable semantic identity, editable structure, deterministic validation and patches, semantic completeness, and portable engine adaptation. Rendering, geometry authoring, and image-to-3D reconstruction belong to external engines and tools. Core and Schema must remain independent of render engines, concrete art styles, and AI providers.
+SceneReplay owns stable semantic identity, editable structure, deterministic validation and patches, semantic completeness, and portable engine adaptation. Rendering, geometry authoring, and image-to-3D reconstruction belong to external engines and tools. Core and Schema must remain independent of render engines, concrete art styles, and AI providers.
 
 ## Resume instructions
 
@@ -30,8 +30,8 @@ Before changing code:
 Useful commands:
 
 ```text
-python tools/shapeforge.py repository
-python tools/shapeforge.py verify
+python tools/scenereplay.py repository
+python tools/scenereplay.py verify
 git log --oneline -15
 git status --short
 ```
@@ -72,7 +72,7 @@ Every milestone should include, where applicable:
 
 ### De-scoped image reconstruction work
 
-Reference-image preprocessing, image comparison, inverse fitting, and reconstruction orchestration were removed. They expanded ShapeForge into image-to-3D tooling instead of strengthening its semantic interoperability layer. Do not restore these workflows without a demonstrated need that cannot be handled by an external authoring or reconstruction tool.
+Reference-image preprocessing, image comparison, inverse fitting, and reconstruction orchestration were removed. They expanded SceneReplay into image-to-3D tooling instead of strengthening its semantic interoperability layer. Do not restore these workflows without a demonstrated need that cannot be handled by an external authoring or reconstruction tool.
 
 ### Automation CLI — Implemented
 
@@ -85,7 +85,7 @@ Current validation note: on 2026-08-12 the connected Unity Editor completed all 
 
 ### M2 — Construction Pass System
 
-Status: Done — [#3](https://github.com/TristinOrg/ShapeForge/issues/3). Commits `fb66be1`, `1ccdc22`; live validation `792eb37`.
+Status: Done — [#3](https://github.com/TristinOrg/SceneReplay/issues/3). Commits `fb66be1`, `1ccdc22`; live validation `792eb37`.
 
 Goal: build and review assets in deterministic passes rather than one monolithic generation.
 
@@ -99,7 +99,7 @@ Deliverables include versioned pass plans, dependencies, completion state, per-p
 
 ### M3 — Game Semantic Metadata
 
-Status: Done — [#4](https://github.com/TristinOrg/ShapeForge/issues/4). Commits `b28ce6e`, `784d7f0`, `cf75cb1`; live validation `792eb37`.
+Status: Done — [#4](https://github.com/TristinOrg/SceneReplay/issues/4). Commits `b28ce6e`, `784d7f0`, `cf75cb1`; live validation `792eb37`.
 
 Goal: make generated output directly useful as a game asset rather than only a model.
 
@@ -116,7 +116,7 @@ Core owns engine-neutral contracts and validation. Engine packages compile them 
 
 ### M4 — Semantic Template Library
 
-Status: Done — [#5](https://github.com/TristinOrg/ShapeForge/issues/5). Commits `12cb22d`, `0cc90ba`; live validation `792eb37`.
+Status: Done — [#5](https://github.com/TristinOrg/SceneReplay/issues/5). Commits `12cb22d`, `0cc90ba`; live validation `792eb37`.
 
 Expand reusable templates only after the metadata foundation exists:
 
@@ -130,15 +130,15 @@ Each library must publish discovery metadata, bounded parameters, detail invento
 
 ### M6 — MotionForge boundary integration
 
-Status: Done — [#7](https://github.com/TristinOrg/ShapeForge/issues/7). Commit `56cd954`; live validation `792eb37`.
+Status: Done — [#7](https://github.com/TristinOrg/SceneReplay/issues/7). Commit `56cd954`; live validation `792eb37`.
 
-ShapeForge continues to own rest pose, stable nodes, semantic rig roles, constraints, and transform targets. MotionForge should own engine-neutral motion intent/IR, tracks, keyframes, curves, composition, and serialization. Native adapters own playback, blending, IK, retargeting, and optimization.
+SceneReplay continues to own rest pose, stable nodes, semantic rig roles, constraints, and transform targets. MotionForge should own engine-neutral motion intent/IR, tracks, keyframes, curves, composition, and serialization. Native adapters own playback, blending, IK, retargeting, and optimization.
 
-Do not place complete animation formats or Unity Animator ownership in ShapeForge Core.
+Do not place complete animation formats or Unity Animator ownership in SceneReplay Core.
 
 ### M7 — Engine adapters and export
 
-Status: Portable export scope done; multi-engine adapters out of current scope — [#8](https://github.com/TristinOrg/ShapeForge/issues/8). Unity Prefab compilation and adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
+Status: Portable export scope done; multi-engine adapters out of current scope — [#8](https://github.com/TristinOrg/SceneReplay/issues/8). Unity Prefab compilation and adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
 
 Develop only after Core contracts stabilize:
 
@@ -148,9 +148,9 @@ Develop only after Core contracts stabilize:
 4. delegate FBX/USD conversion through an explicit, verified external toolchain;
 5. defer Godot and Unreal adapters until their toolchains and real consuming projects are available for end-to-end validation.
 
-### M8 — ShapeForge Agent and MCP
+### M8 — SceneReplay Agent and MCP
 
-Status: Done — [#9](https://github.com/TristinOrg/ShapeForge/issues/9). Commit `a29d133` plus the earlier automation commits; live MCP validation `792eb37`.
+Status: Done — [#9](https://github.com/TristinOrg/SceneReplay/issues/9). Commit `a29d133` plus the earlier automation commits; live MCP validation `792eb37`.
 
 Expose stable workflows only after their local APIs and Python orchestration are mature:
 
@@ -159,7 +159,7 @@ Expose stable workflows only after their local APIs and Python orchestration are
 - staged build execution and resumability;
 - concise machine-readable results with bounded output.
 
-MCP must remain a thin orchestration surface, not a second implementation of ShapeForge rules.
+MCP must remain a thin orchestration surface, not a second implementation of SceneReplay rules.
 
 ## Explicit non-goals
 
@@ -167,15 +167,15 @@ MCP must remain a thin orchestration surface, not a second implementation of Sha
 - Ingesting reference images or fitting geometry to reference renders.
 - Owning rendering, camera, or visual-comparison systems supplied by target engines.
 - Moving provider SDKs into Schema or Core.
-- Treating Low Poly or Unity as the ShapeForge framework identity.
+- Treating Low Poly or Unity as the SceneReplay framework identity.
 - Reimplementing C# validation, Patch, Diff, or Quality Gate logic in Python or MCP.
 - Adding primitives without a demonstrated semantic/template requirement.
 - Starting multi-engine adapters before the conformance contracts are stable.
 
 ## Immediate continuation
 
-1. Keep `python tools/shapeforge.py repository` and `python tools/shapeforge.py verify` green as contracts evolve.
-2. Define and validate the ShapeForge-to-Three.js mapping for stable IDs, hierarchy, transforms, supported semantic metadata, and round-tripping edits.
+1. Keep `python tools/scenereplay.py repository` and `python tools/scenereplay.py verify` green as contracts evolve.
+2. Define and validate the SceneReplay-to-Three.js mapping for stable IDs, hierarchy, transforms, supported semantic metadata, and round-tripping edits.
 3. Run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`.
 4. Create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.
 5. Defer additional engine adapters until a target project and end-to-end toolchain are explicitly selected.
