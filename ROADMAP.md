@@ -139,13 +139,13 @@ Do not place complete animation formats or Unity Animator ownership in SceneRepl
 
 ### M7 — Engine adapters and export
 
-Status: Portable export scope done; Unity is the first engine adapter. Cross-engine availability is a product goal. Adapter descriptor and hierarchy/transform conformance contract v1 are implemented in Core and Unity. Game-metadata capability and stable-node reference checks are part of the shared conformance validator, and Core verifies reversible semantic edits across authored-value and structural operations. Unity Prefab compilation and initial adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
+Status: Portable export scope done; Unity is the first engine adapter. Cross-engine availability is a product goal. Adapter descriptor and hierarchy/transform conformance contract v1 are implemented in Core and Unity. Game-metadata capability and stable-node reference checks are part of the shared conformance validator, and Core verifies reversible semantic edits across authored-value and structural operations. Unity's native Prefab workflow now persists complete source metadata and supports compiling reversible semantic edits; EditMode coverage saves and reloads edited and restored Prefabs. Unity Prefab compilation and initial adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
 
 Develop in this order:
 
-1. use Unity as the reference implementation and validate metadata and reversible edits against its native Prefab workflow;
-2. add Three.js, Godot, and Unreal adapters incrementally, each with a real consuming project and end-to-end validation;
-3. publish adapter setup guides and conformance fixtures for additional engine teams;
+1. add Three.js, Godot, and Unreal adapters incrementally, each with a real consuming project and end-to-end validation;
+2. publish adapter setup guides and conformance fixtures for additional engine teams;
+3. validate each engine's metadata and reversible edits through its native asset workflow;
 4. export geometry-preserving GLB with stable semantic node metadata;
 5. delegate FBX/USD conversion through an explicit, verified external toolchain.
 
@@ -175,7 +175,7 @@ MCP must remain a thin orchestration surface, not a second implementation of Sce
 
 ## Immediate continuation
 
-1. exercise metadata and reversible edits in Unity's native Prefab workflow;
-2. build adapters for Three.js, Godot, and Unreal against consuming projects;
+1. build adapters for Three.js, Godot, and Unreal against consuming projects;
+2. validate metadata and reversible edits through each engine's native asset workflow;
 3. run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`;
 4. create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.

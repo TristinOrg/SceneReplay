@@ -48,6 +48,19 @@ namespace SceneReplay.Unity
             return definition;
         }
 
+        /// <summary>Serializes validated versioned game-semantic metadata.</summary>
+        public string Serialize(ShapeGameMetadata metadata)
+        {
+            if (metadata == null)
+                throw new ArgumentNullException(nameof(metadata));
+
+            ShapeDiagnosticReport report = new ShapeGameMetadataValidator().Analyze(metadata);
+            if (!report.IsValid)
+                throw new ArgumentException("Game metadata is invalid.", nameof(metadata));
+
+            return JsonConvert.SerializeObject(metadata, Settings);
+        }
+
         /// <summary>
         /// Serializes an ordered ShapePatch document for external editing tools.
         /// </summary>

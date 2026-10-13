@@ -19,3 +19,4 @@
 - Added shared material and property-block appearance handling with lifecycle restoration.
 - Added stable node bindings, prepared generation plans, and failure-safe model regeneration.
 - Added serialization tests for published contracts and template specifications.
+- Added native Prefab compilation for complete game metadata and a reversible ShapePatch-to-Prefab workflow.

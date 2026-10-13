@@ -18,28 +18,65 @@ namespace SceneReplay.Unity.Editor
             ShapeDefinition definition,
             string          folder = "Assets/SceneReplay/Generated")
         {
+            return CompileInternal(root, definition, null, folder);
+        }
+
+        /// <summary>Compiles a model and its game metadata into a self-describing Unity Prefab.</summary>
+        public static UnityShapePrefabCompilationResult CompileWithMetadata(
+            GameObject root,
+            ShapeDefinition definition,
+            ShapeGameMetadata metadata,
+            string folder = "Assets/SceneReplay/Generated")
+        {
+            if (metadata == null)
+                throw new ArgumentNullException(nameof(metadata));
+
+            return CompileInternal(root, definition, metadata, folder);
+        }
+
+        private static UnityShapePrefabCompilationResult CompileInternal(
+            GameObject root,
+            ShapeDefinition definition,
+            ShapeGameMetadata metadata,
+            string folder)
+        {
             if (root == null)
                 throw new ArgumentNullException(nameof(root));
-            new ShapeDefinitionValidator().Validate(definition);
             if (!root.TryGetComponent(out UnityShapeModel model) || model.BindingCount == 0)
                 throw new ShapeValidationException("Prefab compilation requires a generated UnityShapeModel.");
+            ShapeDiagnosticReport conformance = metadata == null
+                ? new ShapeAdapterConformanceValidator().Analyze(definition, UnityShapeAdapter.Descriptor, model)
+                : new ShapeAdapterConformanceValidator().Analyze(definition, metadata, UnityShapeAdapter.Descriptor, model);
+            if (!conformance.IsValid)
+            {
+                ShapeDiagnostic diagnostic = conformance.Diagnostics[0];
+                throw new ShapeValidationException(diagnostic.Code, diagnostic.Message, diagnostic.NodeId, diagnostic.Path);
+            }
+            if (metadata != null)
+            {
+                if (root.TryGetComponent(out UnityShapeGameMetadataManifest _))
+                    throw new InvalidOperationException("Game metadata has already been compiled for this model.");
+            }
             ValidateFolder(folder);
             EnsureFolder(folder);
 
             ShapeJsonSerializer serializer = new();
-            string              json       = serializer.Serialize(definition);
-            string              fingerprint = Fingerprint(json);
+            string              json         = serializer.Serialize(definition);
+            string              metadataJson = metadata == null ? string.Empty : serializer.Serialize(metadata);
+            string              fingerprint  = Fingerprint(metadata == null ? json : $"{json}\n{metadataJson}");
             UnityShapeAssetManifest manifest = root.GetComponent<UnityShapeAssetManifest>();
             bool addedManifest = manifest == null;
             if (addedManifest)
                 manifest = root.AddComponent<UnityShapeAssetManifest>();
-            manifest.Initialize(definition.Schema, definition.Name, fingerprint, json, model.BindingCount);
+            manifest.Initialize(definition.Schema, definition.Name, fingerprint, json, model.BindingCount, metadataJson);
 
             string meshPath   = null;
             string prefabPath = AssetDatabase.GenerateUniqueAssetPath($"{folder}/{Sanitize(root.name)}.prefab");
             try
             {
                 meshPath = UnityGeneratedModelAssetStore.PersistMeshes(root, folder);
+                if (metadata != null)
+                    new UnityShapeGameMetadataCompiler().Compile(model, definition, metadata);
                 GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
                 if (prefab == null)
                     throw new InvalidOperationException("Unity did not create the generated Prefab.");
