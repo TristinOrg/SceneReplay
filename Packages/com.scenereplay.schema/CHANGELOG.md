@@ -11,6 +11,7 @@
 - Added versioned construction plans with dependencies, state, patches, and quality-policy references.
 - Added versioned game metadata for sockets, grips, interaction, IK, damage, colliders, and LOD.
 - Published a Draft 2020-12 construction-plan schema and resumable example.
+- Added the versioned engine-adapter descriptor contract, schema, and Unity capability example.
 
 ## [0.1.0] - 2026-08-01
 

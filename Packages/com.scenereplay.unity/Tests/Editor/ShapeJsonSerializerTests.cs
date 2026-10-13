@@ -126,6 +126,23 @@ namespace SceneReplay.Unity.Tests
         }
 
         [Test]
+        public void AdapterDescriptorRoundTripPreservesCapabilitiesAndPolicy()
+        {
+            ShapeAdapterDescriptor source = UnityShapeAdapter.Descriptor;
+            ShapeJsonSerializer serializer = new();
+
+            string json = serializer.Serialize(source);
+            ShapeAdapterDescriptor result = serializer.DeserializeAdapterDescriptor(json);
+
+            Assert.That(json, Does.Contain("\"schema\":\"scenereplay.adapter/1.0\""));
+            Assert.That(json, Does.Contain("\"unsupportedFeaturePolicy\":\"reject\""));
+            Assert.That(result.AdapterId, Is.EqualTo(source.AdapterId));
+            Assert.That(result.EngineId, Is.EqualTo("unity"));
+            Assert.That(result.Features, Does.Contain(ShapeAdapterFeatureIds.StableNodeIds));
+            Assert.That(result.UnsupportedFeaturePolicy, Is.EqualTo(ShapeAdapterUnsupportedFeaturePolicy.Reject));
+        }
+
+        [Test]
         public void QualityPolicyRoundTripPreservesSemanticRequirements()
         {
             ShapeQualityPolicy source = new()

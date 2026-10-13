@@ -1,0 +1,14 @@
+{
+  "schema": "scenereplay.adapter/1.0",
+  "adapterId": "com.scenereplay.unity",
+  "engineId": "unity",
+  "version": "0.1.0",
+  "features": [
+    "stable-node-ids",
+    "hierarchy",
+    "local-transforms",
+    "semantic-rig",
+    "game-metadata"
+  ],
+  "unsupportedFeaturePolicy": "reject"
+}

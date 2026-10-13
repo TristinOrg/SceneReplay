@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Published Unity adapter capabilities and stable semantic parent bindings for shared conformance validation.
 - Removed reference rendering and image-oriented JSON/automation commands.
 - Added ShapePatch JSON serialization for compact external and LLM-authored edits.
 - Added quality-policy JSON serialization for external asset acceptance workflows.

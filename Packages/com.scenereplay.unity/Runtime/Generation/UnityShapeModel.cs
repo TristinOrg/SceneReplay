@@ -8,12 +8,17 @@ namespace SceneReplay.Unity
     /// Persists stable node-to-Transform bindings and exposes them to engine-agnostic motion systems.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class UnityShapeModel : MonoBehaviour, IShapeTransformResolver
+    public sealed class UnityShapeModel : MonoBehaviour, IShapeHierarchyTransformResolver
     {
-        [SerializeField] private List<string>    nodeIds = new();
-        [SerializeField] private List<Transform> targets = new();
+        [SerializeField] private List<string>    nodeIds    = new();
+        [SerializeField] private List<string>    parentIds  = new();
+        [SerializeField] private List<Transform> targets    = new();
 
         private Dictionary<string, Transform> targetsById;
+        private Dictionary<string, string> parentIdsById;
+
+        /// <inheritdoc />
+        public string AdapterId => UnityShapeAdapter.AdapterId;
 
         /// <summary>
         /// Gets the number of generated node bindings.
@@ -37,11 +42,23 @@ namespace SceneReplay.Unity
             return false;
         }
 
-        internal void AddBinding(string nodeId, Transform target)
+        /// <inheritdoc />
+        public bool TryGetParentNodeId(string nodeId, out string parentNodeId)
+        {
+            if (string.IsNullOrWhiteSpace(nodeId))
+                throw new ArgumentException("Node ID cannot be empty.", nameof(nodeId));
+
+            EnsureLookup();
+            return parentIdsById.TryGetValue(nodeId, out parentNodeId);
+        }
+
+        internal void AddBinding(string nodeId, string parentNodeId, Transform target)
         {
             nodeIds.Add(nodeId);
+            parentIds.Add(parentNodeId ?? string.Empty);
             targets.Add(target);
             targetsById = null;
+            parentIdsById = null;
         }
 
         internal bool TryGetTransform(string nodeId, out Transform target)
@@ -72,13 +89,18 @@ namespace SceneReplay.Unity
                 return;
 
             targetsById = new(nodeIds.Count, StringComparer.Ordinal);
+            parentIdsById = new(nodeIds.Count, StringComparer.Ordinal);
             for (int index = 0; index < nodeIds.Count; index++)
+            {
                 targetsById.Add(nodeIds[index], targets[index]);
+                parentIdsById.Add(nodeIds[index], index < parentIds.Count ? parentIds[index] : string.Empty);
+            }
         }
 
         private void OnValidate()
         {
             targetsById = null;
+            parentIdsById = null;
         }
     }
 

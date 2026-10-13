@@ -13,3 +13,5 @@ Semantic packages implement `ShapeTemplate<TSpecification>` to compile domain-re
 `ShapeHumanoidRig` defines and validates the canonical role set for a full biped humanoid skeleton. It remains engine-neutral: the authored ShapeNode hierarchy provides the rest pose, while each engine adapter validates and maps the resulting transforms to its native avatar system.
 
 `ShapePatchApplier.ApplyWithInverse` applies a validated patch to a deep copy and returns both the new definition and a reverse patch. Tooling can persist that inverse alongside an AI-authored change to support deterministic undo without putting history storage or editor state in Core.
+
+`ShapeAdapterDescriptor` publishes an adapter's host engine, version, supported semantic features, and policy for unsupported features. Contract v1 requires stable node IDs, hierarchy, and local transforms. `ShapeAdapterConformanceValidator.Analyze` checks a compiled hierarchy against its source definition, verifies the descriptor identity, compares parent relationships and transforms, and probes writable transforms before restoring their original values.

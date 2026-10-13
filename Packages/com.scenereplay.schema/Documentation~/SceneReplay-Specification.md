@@ -43,3 +43,9 @@ Adapters are responsible for converting these semantics to the native axes, hand
 ## Extensibility
 
 Shape and style documents are the portable contract. Engine adapters may expose language-specific interfaces, but must preserve document semantics and stable node identity.
+
+## Adapter descriptor 1.0
+
+Adapters publish a `scenereplay.adapter/1.0` descriptor with a stable adapter ID, host engine ID, implementation version, supported feature identifiers, and an explicit unsupported-feature policy. Contract v1 requires `stable-node-ids`, `hierarchy`, and `local-transforms`. Optional feature identifiers include `semantic-rig`, `game-metadata`, `shape-patches`, and `patch-rollback`; adapter packages may publish additional identifiers.
+
+The unsupported-feature policy is one of `reject`, `preserveAsMetadata`, or `warnAndSkip`. Adapters must report unsupported content according to that declared policy and must not silently discard definition data. A conforming compiled hierarchy resolves each source node by its stable ID, exposes its semantic parent ID, and maps its local position, rotation, and scale according to the transform conventions above.

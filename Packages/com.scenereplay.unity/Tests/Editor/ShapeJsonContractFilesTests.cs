@@ -19,6 +19,7 @@ namespace SceneReplay.Unity.Tests
             string inventorySchema = ReadText("Schemas/scenereplay.detail-inventory-1.0.schema.json");
             string constructionSchema = ReadText("Schemas/scenereplay.construction-plan-1.0.schema.json");
             string gameSchema = ReadText("Schemas/scenereplay.game-metadata-1.0.schema.json");
+            string adapterSchema = ReadText("Schemas/scenereplay.adapter-1.0.schema.json");
 
             Assert.That(shapeSchema, Does.Contain($"\"const\": \"{ShapeDefinition.CurrentSchema}\""));
             Assert.That(styleSchema, Does.Contain($"\"const\": \"{ShapeStyleDefinition.CurrentSchema}\""));
@@ -27,6 +28,7 @@ namespace SceneReplay.Unity.Tests
             Assert.That(inventorySchema, Does.Contain($"\"const\": \"{ShapeDetailInventory.CurrentSchema}\""));
             Assert.That(constructionSchema, Does.Contain($"\"const\": \"{ShapeConstructionPlan.CurrentSchema}\""));
             Assert.That(gameSchema, Does.Contain($"\"const\": \"{ShapeGameMetadata.CurrentSchema}\""));
+            Assert.That(adapterSchema, Does.Contain($"\"const\": \"{ShapeAdapterDescriptor.CurrentSchema}\""));
             Assert.That(shapeSchema, Does.Contain("https://json-schema.org/draft/2020-12/schema"));
             Assert.That(styleSchema, Does.Contain("https://json-schema.org/draft/2020-12/schema"));
             Assert.That(patchSchema, Does.Contain("https://json-schema.org/draft/2020-12/schema"));
@@ -44,6 +46,7 @@ namespace SceneReplay.Unity.Tests
             string              inventoryJson = ReadText("Examples/minimal-detail-inventory.json");
             string              constructionJson = ReadText("Examples/minimal-construction-plan.json");
             string              gameJson = ReadText("Examples/minimal-game-metadata.json");
+            string              adapterJson = ReadText("Examples/minimal-adapter-descriptor.json");
 
             ShapeDefinition      shape = serializer.DeserializeShape(shapeJson);
             ShapeStyleDefinition style = serializer.DeserializeStyle(styleJson);
@@ -52,6 +55,7 @@ namespace SceneReplay.Unity.Tests
             ShapeDetailInventory inventory = serializer.DeserializeDetailInventory(inventoryJson);
             ShapeConstructionPlan construction = serializer.DeserializeConstructionPlan(constructionJson);
             ShapeGameMetadata game = serializer.DeserializeGameMetadata(gameJson);
+            ShapeAdapterDescriptor adapter = serializer.DeserializeAdapterDescriptor(adapterJson);
 
             Assert.That(shape.Root.Id, Is.EqualTo("model"));
             Assert.That(style.Id, Is.EqualTo("example/default"));
@@ -60,6 +64,8 @@ namespace SceneReplay.Unity.Tests
             Assert.That(inventory.Details[0].Id, Is.EqualTo("body"));
             Assert.That(construction.Passes[1].DependsOn[0], Is.EqualTo("structure"));
             Assert.That(game.Anchors[0].NodeId, Is.EqualTo("model"));
+            Assert.That(adapter.AdapterId, Is.EqualTo(UnityShapeAdapter.AdapterId));
+            Assert.That(adapter.Features, Does.Contain(ShapeAdapterFeatureIds.Hierarchy));
         }
 
         private static string ReadText(string relativePath)

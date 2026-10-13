@@ -48,7 +48,7 @@ The repository contains four Unity Package Manager packages:
 | Package | Responsibility |
 |---|---|
 | `com.scenereplay.schema` | Serializable, engine-neutral semantic shape, style, patch, and rig contracts |
-| `com.scenereplay.core` | Validation, fluent authoring, styles, capabilities, templates, rig lookup, and generation limits |
+| `com.scenereplay.core` | Validation, semantic editing, adapter capability descriptors and conformance checks, styles, templates, and rig lookup |
 | `com.scenereplay.unity` | JSON serialization, Unity hierarchy adaptation, appearance resources, bindings, plans, and regeneration |
 | `com.scenereplay.lowpoly` | Official Low Poly geometry backend, caches, templates, presets, batches, and Editor tools |
 
@@ -59,6 +59,8 @@ Schema <- Core <- Unity Adapter <- Low Poly
 ```
 
 Schema and Core have no `UnityEngine`, render-pipeline, concrete-style, or AI-provider dependency.
+
+Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their semantic features and unsupported-feature policy. Contract v1 requires stable node IDs, hierarchy, and local transforms. `ShapeAdapterConformanceValidator` checks those promises against a compiled hierarchy, including identity, parent relationships, transform values, and writable transform restoration. Unity is the first adapter to publish this descriptor and pass the shared contract; other engine adapters will use the same contract as they are added.
 
 ## Requirements
 

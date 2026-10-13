@@ -30,7 +30,8 @@ namespace SceneReplay.Unity.Tests
                 new TestGenerator()
             });
 
-            generatedRoot = generator.Generate(new ShapeDefinition("Robot", root));
+            ShapeDefinition definition = new("Robot", root);
+            generatedRoot = generator.Generate(definition);
 
             Assert.That(generatedRoot.name, Is.EqualTo("Robot"));
             Assert.That(generatedRoot.transform.childCount, Is.EqualTo(1));
@@ -40,6 +41,14 @@ namespace SceneReplay.Unity.Tests
             UnityShapeModel model = generatedRoot.GetComponent<UnityShapeModel>();
             Assert.That(model.BindingCount, Is.EqualTo(2));
             Assert.That(model.TryGetTarget("body", out IShapeTransformTarget target), Is.True);
+            Assert.That(model.TryGetParentNodeId("robot", out string rootParentId), Is.True);
+            Assert.That(rootParentId, Is.Empty);
+            Assert.That(model.TryGetParentNodeId("body", out string bodyParentId), Is.True);
+            Assert.That(bodyParentId, Is.EqualTo("robot"));
+
+            ShapeDiagnosticReport conformance = new ShapeAdapterConformanceValidator()
+                .Analyze(definition, UnityShapeAdapter.Descriptor, model);
+            Assert.That(conformance.IsValid, Is.True);
 
             target.LocalPosition = new(5f, 6f, 7f);
             Assert.That(generatedRoot.transform.GetChild(0).localPosition, Is.EqualTo(new Vector3(5f, 6f, 7f)));

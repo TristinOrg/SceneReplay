@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -20,6 +21,7 @@ namespace SceneReplay.Unity
         };
         private readonly ShapeDefinitionValidator      shapeValidator = new ShapeDefinitionValidator();
         private readonly ShapeStyleDefinitionValidator styleValidator = new ShapeStyleDefinitionValidator();
+        private readonly ShapeAdapterDescriptorValidator adapterDescriptorValidator = new();
 
         /// <summary>
         /// Serializes a shape definition using the versioned SceneReplay JSON contract.
@@ -73,6 +75,35 @@ namespace SceneReplay.Unity
                 throw new JsonSerializationException("ShapePatch JSON requires an operation collection.");
 
             return document;
+        }
+
+        /// <summary>Serializes a versioned engine-adapter capability descriptor.</summary>
+        public string Serialize(ShapeAdapterDescriptor descriptor)
+        {
+            if (descriptor == null)
+                throw new ArgumentNullException(nameof(descriptor));
+
+            ShapeDiagnosticReport report = adapterDescriptorValidator.Analyze(descriptor);
+            if (!report.IsValid)
+                throw new ArgumentException("Adapter descriptor is invalid.", nameof(descriptor));
+
+            return JsonConvert.SerializeObject(descriptor, Settings);
+        }
+
+        /// <summary>Deserializes and validates a versioned engine-adapter capability descriptor.</summary>
+        public ShapeAdapterDescriptor DeserializeAdapterDescriptor(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                throw new ArgumentException("Adapter descriptor JSON cannot be empty.", nameof(json));
+
+            ShapeAdapterDescriptor descriptor = JsonConvert.DeserializeObject<ShapeAdapterDescriptor>(json, Settings) ??
+                                                throw new JsonSerializationException("Adapter JSON produced no descriptor.");
+            ShapeDiagnosticReport report = adapterDescriptorValidator.Analyze(descriptor);
+            if (!report.IsValid)
+                throw new JsonSerializationException(string.Join("; ", report.Diagnostics.Select(
+                    diagnostic => $"{diagnostic.Code}: {diagnostic.Message}")));
+
+            return descriptor;
         }
 
         /// <summary>

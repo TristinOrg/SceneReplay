@@ -80,7 +80,7 @@ namespace SceneReplay.Unity
         {
             ShapeGenerationContext  context    = new(definition, styleResolver);
             IUnityAppearanceSession appearance = appearanceBackend.Begin(context);
-            GameObject              root       = GenerateNode(definition.Root, parent, context, appearance);
+            GameObject              root       = GenerateNode(definition.Root, parent, context, appearance, semanticParentId: string.Empty);
 
             try
             {
@@ -100,7 +100,8 @@ namespace SceneReplay.Unity
             ShapeGenerationContext context,
             IUnityAppearanceSession appearance,
             UnityShapeModel         model    = null,
-            string                  idSuffix = "")
+            string                  idSuffix = "",
+            string                  semanticParentId = "")
         {
             GameObject primary = GenerateNodeInstance(
                 node,
@@ -108,6 +109,7 @@ namespace SceneReplay.Unity
                 context,
                 appearance,
                 model,
+                semanticParentId,
                 idSuffix,
                 ShapeMirrorAxis.None);
 
@@ -121,6 +123,7 @@ namespace SceneReplay.Unity
                         context,
                         appearance,
                         model,
+                        semanticParentId,
                         idSuffix + GetMirrorIdSuffix(node.MirrorAxis),
                         node.MirrorAxis);
                 }
@@ -140,6 +143,7 @@ namespace SceneReplay.Unity
             ShapeGenerationContext  context,
             IUnityAppearanceSession appearance,
             UnityShapeModel          model,
+            string                   semanticParentId,
             string                   idSuffix,
             ShapeMirrorAxis          mirrorAxis)
         {
@@ -163,7 +167,8 @@ namespace SceneReplay.Unity
                 appearance.Attach(generated);
             }
 
-            model.AddBinding(node.Id + idSuffix, generated.transform);
+            string nodeId = node.Id + idSuffix;
+            model.AddBinding(nodeId, semanticParentId, generated.transform);
 
             Renderer renderer = generated.GetComponent<Renderer>();
             if (renderer != null)
@@ -172,7 +177,7 @@ namespace SceneReplay.Unity
             try
             {
                 foreach (ShapeNode child in node.Children)
-                    GenerateNode(child, generated.transform, context, appearance, model, idSuffix);
+                    GenerateNode(child, generated.transform, context, appearance, model, idSuffix, nodeId);
             }
             catch
             {

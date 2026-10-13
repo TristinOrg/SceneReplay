@@ -139,11 +139,11 @@ Do not place complete animation formats or Unity Animator ownership in SceneRepl
 
 ### M7 — Engine adapters and export
 
-Status: Portable export scope done; Unity is the first engine adapter. Cross-engine availability is a product goal, with additional adapters sequenced behind a shared conformance contract — [#8](https://github.com/TristinOrg/SceneReplay/issues/8). Unity Prefab compilation and initial adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
+Status: Portable export scope done; Unity is the first engine adapter. Cross-engine availability is a product goal. Adapter descriptor and hierarchy/transform conformance contract v1 are implemented in Core and Unity. Unity Prefab compilation and initial adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
 
 Develop in this order:
 
-1. complete the shared adapter conformance suite for stable IDs, hierarchy, transforms, semantic metadata, and round-tripping edits;
+1. extend the shared conformance suite to semantic metadata and round-tripping edits;
 2. use Unity as the reference implementation and validate conformance against its native Prefab workflow;
 3. add Three.js, Godot, and Unreal adapters incrementally, each with a real consuming project and end-to-end validation;
 4. export geometry-preserving GLB with stable semantic node metadata;
@@ -175,7 +175,7 @@ MCP must remain a thin orchestration surface, not a second implementation of Sce
 
 ## Immediate continuation
 
-1. complete the engine-neutral adapter conformance contract for stable IDs, hierarchy, transforms, semantic metadata, and round-tripping edits;
-2. exercise that contract in Unity, then build adapters for Three.js, Godot, and Unreal against consuming projects;
+1. extend conformance validation from hierarchy and transforms to semantic metadata and round-tripping edits;
+2. exercise the full contract in Unity, then build adapters for Three.js, Godot, and Unreal against consuming projects;
 3. run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`;
 4. create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.
