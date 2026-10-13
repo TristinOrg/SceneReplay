@@ -5,19 +5,19 @@
 [![Release](https://img.shields.io/badge/release-v0.1.0-4c8bf5.svg)](https://github.com/TristinOrg/ShapeForge/releases/tag/v0.1.0)
 [![License](https://img.shields.io/badge/license-AGPL--3.0--or--later%20%2F%20Commercial-blue.svg)](LICENSE.md)
 
-ShapeForge is an engine-neutral semantic layer between AI-authored 3D intent and concrete engines. It defines stable, editable world assets as versioned JSON, validates and patches them deterministically, and adapts them to engine-native hierarchies and portable formats.
+ShapeForge is an engine-neutral semantic format and adaptation layer for editable 3D assets. A ShapeForge definition describes an asset as a hierarchy of parts with stable IDs, transforms, shape parameters, and semantic metadata. Schema and Core validate that definition and apply deterministic diffs and patches; engine adapters translate it into native, editable objects.
 
 See [ROADMAP.md](ROADMAP.md) for architecture and continuation instructions, and the public [ShapeForge Roadmap Project](https://github.com/orgs/TristinOrg/projects/1) for milestone status and Issues.
 
-The project starts with Unity and an official Low Poly implementation, but neither Unity nor Low Poly defines the framework boundary. A future Godot or Unreal adapter can consume the same concepts by implementing its own engine and geometry backends.
+ShapeForge sits above runtime engines such as Three.js, Unity, Godot, and Unreal. An engine owns scene execution and rendering; ShapeForge preserves an asset's semantic structure and identity as it is authored, edited, validated, and adapted between tools. For example, an application could keep the ID of a robot's left arm stable while applying a patch to that part, then map the definition into its engine's object hierarchy.
 
-ShapeForge does not render scenes or reconstruct assets from images. External authoring tools create or edit geometry; ShapeForge gives those assets stable meaning, identity, validation, and a portable path into engines such as Unity and Three.js.
+The current implementation provides the Schema and Core packages, a Unity adapter, the official Low Poly geometry backend, and GLB export. A Three.js adapter is a possible integration target, not an implemented package. ShapeForge does not render scenes or reconstruct assets from reference images, and it does not replace modeling tools. AI and other authoring tools can create or edit ShapeForge definitions, but no AI provider is required by the format or Core.
 
 ## Release status
 
 Version `0.1.0` is the first framework release. It establishes the public package boundaries, semantic Shape and Style JSON contracts, stable IDs, deterministic validation and Patch/Diff, Unity adapter, Low Poly implementation, portable GLB export, and representative presets.
 
-ShapeForge is suitable for experimentation, tooling integrations, procedural content pipelines, prototypes, and stylized production assets whose geometry can be expressed as semantic parts. The API remains pre-1.0 and may evolve based on real project feedback.
+ShapeForge is intended for tooling integrations and content pipelines that need assets to remain understandable and editable as semantic parts instead of becoming opaque meshes. The API is pre-1.0 and may change while the framework boundary and integrations are established.
 
 ## Core ideas
 
@@ -25,7 +25,7 @@ ShapeForge is suitable for experimentation, tooling integrations, procedural con
 - **Models are editable assemblies.** Stable IDs and nested transforms produce a native hierarchy instead of an opaque combined mesh.
 - **Style is separate from geometry.** Palette roles and inherited styles allow the same definition to be rendered with different visual treatments.
 - **External AI is an author, not a dependency.** LLMs produce validated ShapeForge JSON; no AI provider is referenced by Schema or Core.
-- **ShapeForge is the semantic middle layer.** It owns identity, structure, edits, validation, and adapters; rendering and image-to-3D authoring stay in external tools.
+- **ShapeForge is the semantic middle layer.** It owns portable asset meaning, identity, structure, edits, validation, and adapter contracts. The engine owns runtime scene behavior and rendering.
 - **Motion is a separate responsibility.** ShapeForge exposes semantic pivots and transform targets so MotionForge or another animation system can bind without owning model generation.
 - **Low Poly is an implementation.** Developers can add realistic, voxel, SDF, custom-mesh, or engine-specific generators without changing Core.
 - **Performance is explicit.** Meshes and materials are cached, repeated definitions can be prepared once, and large batches remain caller-budgeted.
@@ -280,7 +280,16 @@ Document operations require the Unity MCP server. `verify` refreshes assets and 
 
 ## Semantic interoperability boundary
 
-ShapeForge does not compete with engine or authoring tools on rendering, geometry modeling, or image-to-3D reconstruction. External tools create geometry and visuals; ShapeForge adds stable semantic identity, editable structure, deterministic validation, portable patches, and engine adaptation. A Three.js integration should map the ShapeForge definition and stable node IDs onto Three.js objects, while keeping rendering and scene presentation in the application.
+The responsibility boundary is:
+
+| Concern | Owner |
+|---|---|
+| Portable asset definition, part meaning, stable IDs, validation, and structural edits | ShapeForge Schema/Core |
+| Procedural geometry implementation and engine-native hierarchy creation | Geometry backend and engine adapter |
+| Scene execution, rendering, camera, and application interaction | Host engine and application (for example, Three.js) |
+| Initial modeling or image-to-3D authoring | External authoring tools or AI providers |
+
+Three.js provides a scene and rendering runtime. ShapeForge addresses a different layer: a portable, semantically editable definition that an integration can map into a Three.js object hierarchy while retaining ShapeForge IDs and metadata. That adapter does not exist in this release; the implemented engine integration is Unity. ShapeForge itself does not render scenes, model arbitrary geometry, or reconstruct assets from reference images.
 
 Game Semantic Metadata is also portable. A `shapeforge.game-metadata/1.0` document binds sockets, grips, interaction and IK anchors, damage zones, collider rules, LOD membership, and gameplay tags to stable node IDs. Core validates those bindings; the Unity adapter compiles them into child transforms, native colliders, `LODGroup`, and a cached runtime manifest. This keeps gameplay intent readable and editable without placing Unity types in Core.
 
