@@ -112,85 +112,6 @@ def run_repository(_: argparse.Namespace) -> int:
     return subprocess.run([sys.executable, ROOT / ".github/scripts/validate_repository.py"], cwd=ROOT).returncode
 
 
-def run_image_compare(args: argparse.Namespace) -> int:
-    try:
-        from tools.shapeforge_image_compare import compare_manifests
-    except ModuleNotFoundError:
-        from shapeforge_image_compare import compare_manifests
-
-    result = compare_manifests(Path(args.reference).resolve(), Path(args.candidate).resolve())
-    output = json.dumps(result, indent=2, ensure_ascii=False)
-    if args.output:
-        output_path = Path(args.output)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(output + "\n", encoding="utf-8")
-    else:
-        print(output)
-    return 0
-
-
-def run_reference_blueprint(args: argparse.Namespace) -> int:
-    try:
-        from tools.shapeforge_reference_blueprint import write_blueprint
-    except ModuleNotFoundError:
-        from shapeforge_reference_blueprint import write_blueprint
-
-    write_blueprint(Path(args.source).resolve(), Path(args.output).resolve(), Path(args.crops).resolve())
-    return 0
-
-
-def run_reference_pipeline(args: argparse.Namespace) -> int:
-    try:
-        from tools.shapeforge_reference_pipeline import run_pipeline
-    except ModuleNotFoundError:
-        from shapeforge_reference_pipeline import run_pipeline
-
-    review = Path(args.review).resolve() if args.review else None
-    annotations = Path(args.annotations).resolve() if args.annotations else None
-    result = run_pipeline(Path(args.source), Path(args.work), review, annotations)
-    print(json.dumps(result, indent=2, ensure_ascii=False))
-    return 0
-
-
-def run_image_reconstruction(args: argparse.Namespace) -> int:
-    try:
-        from tools.shapeforge_reconstruct_images import cli_invoke, reconstruct_images
-    except ModuleNotFoundError:
-        from shapeforge_reconstruct_images import cli_invoke, reconstruct_images
-
-    result = reconstruct_images(
-        Path(args.source), Path(args.reference), Path(args.capture), Path(args.output), Path(args.work),
-        args.max_iterations, args.target_score, args.min_improvement, cli_invoke,
-    )
-    print(json.dumps(result, indent=2, ensure_ascii=False))
-    return 0
-
-
-def run_offline_reconstruction(args: argparse.Namespace) -> int:
-    try:
-        from tools.shapeforge_reconstruct_images import cli_invoke, optimize_images
-    except ModuleNotFoundError:
-        from shapeforge_reconstruct_images import cli_invoke, optimize_images
-
-    result = optimize_images(
-        Path(args.source), Path(args.reference), Path(args.capture), Path(args.output), Path(args.work),
-        args.max_evaluations, args.min_improvement, cli_invoke, not args.no_profiles,
-        target_score=args.target_score)
-    print(json.dumps(result, indent=2, ensure_ascii=False))
-    return 0
-
-
-def run_reconstruction_benchmark(args: argparse.Namespace) -> int:
-    try:
-        from tools.shapeforge_reconstruction_benchmark import run_benchmark
-    except ModuleNotFoundError:
-        from shapeforge_reconstruction_benchmark import run_benchmark
-
-    result = run_benchmark(Path(args.manifest), Path(args.output), Path(args.work))
-    print(json.dumps(result, indent=2, ensure_ascii=False))
-    return 0 if result["passed"] else 1
-
-
 def run_external_export(args: argparse.Namespace) -> int:
     try:
         from tools.shapeforge_external_export import export_external, export_with_profile
@@ -294,8 +215,8 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--instance", help="Unity MCP instance, for example ShapeForge@abc123")
     commands = result.add_subparsers(dest="command", required=True)
     for name, other in (("validate", None), ("diff", "after"), ("patch", "patch"),
-                        ("quality", "policy"), ("assess", None), ("inventory", "inventory"),
-                        ("compare", None), ("game", "metadata"), ("reconstruct", None)):
+                        ("quality", "policy"), ("inventory", "inventory"),
+                        ("game", "metadata")):
         command = commands.add_parser(name)
         command.add_argument("source")
         if other:
@@ -312,12 +233,6 @@ def parser() -> argparse.ArgumentParser:
     step.add_argument("--pass", dest="argument", required=True, help="Ready pass ID")
     step.add_argument("-o", "--output")
     step.set_defaults(handler=run_document)
-    render = commands.add_parser("render")
-    render.add_argument("source", help="ShapeDefinition JSON")
-    render.add_argument("other", metavar="capture", help="Render Capture JSON")
-    render.add_argument("--images", dest="argument", required=True, help="Output folder for transparent PNG views")
-    render.add_argument("-o", "--output", help="Output capture manifest")
-    render.set_defaults(handler=run_document)
     export_glb = commands.add_parser("export-glb")
     export_glb.add_argument("source", help="ShapeDefinition JSON")
     export_glb.add_argument("--asset", dest="argument", required=True, help="Output .glb path")
@@ -341,48 +256,6 @@ def parser() -> argparse.ArgumentParser:
     discover = commands.add_parser("discover")
     discover.add_argument("-o", "--output")
     discover.set_defaults(handler=run_document, source=None, other=None, argument=None)
-    image_compare = commands.add_parser("image-compare")
-    image_compare.add_argument("reference", help="Reference Images manifest")
-    image_compare.add_argument("candidate", help="Candidate Render Capture manifest")
-    image_compare.add_argument("-o", "--output", help="Output Render Compare JSON")
-    image_compare.set_defaults(handler=run_image_compare)
-    reference_blueprint = commands.add_parser("reference-blueprint")
-    reference_blueprint.add_argument("source", help="Single image or five-view reference sheet")
-    reference_blueprint.add_argument("-o", "--output", required=True, help="Output Reference Blueprint JSON")
-    reference_blueprint.add_argument("--crops", required=True, help="Output folder for isolated views")
-    reference_blueprint.set_defaults(handler=run_reference_blueprint)
-    reference_pipeline = commands.add_parser("reference-pipeline")
-    reference_pipeline.add_argument("source", help="Reference image or sheet")
-    reference_pipeline.add_argument("--work", required=True, help="Persistent pipeline workspace")
-    reference_pipeline.add_argument("--review", help="Completed Reference Review JSON")
-    reference_pipeline.add_argument("--annotations", help="OCR or transcribed Reference Annotations JSON")
-    reference_pipeline.set_defaults(handler=run_reference_pipeline)
-    image_reconstruct = commands.add_parser("image-reconstruct")
-    image_reconstruct.add_argument("source", help="Initial ShapeDefinition JSON")
-    image_reconstruct.add_argument("reference", help="Reference Images manifest")
-    image_reconstruct.add_argument("capture", help="Render Capture template")
-    image_reconstruct.add_argument("-o", "--output", required=True, help="Best output ShapeDefinition")
-    image_reconstruct.add_argument("--work", required=True, help="Iteration artifacts folder")
-    image_reconstruct.add_argument("--max-iterations", type=int, default=8)
-    image_reconstruct.add_argument("--target-score", type=float, default=0.9)
-    image_reconstruct.add_argument("--min-improvement", type=float, default=0.005)
-    image_reconstruct.set_defaults(handler=run_image_reconstruction)
-    offline_reconstruct = commands.add_parser("offline-reconstruct")
-    offline_reconstruct.add_argument("source", help="Initial ShapeDefinition JSON")
-    offline_reconstruct.add_argument("reference", help="Reference Images manifest")
-    offline_reconstruct.add_argument("capture", help="Render Capture template")
-    offline_reconstruct.add_argument("-o", "--output", required=True, help="Best output ShapeDefinition")
-    offline_reconstruct.add_argument("--work", required=True, help="Evaluation artifact folder")
-    offline_reconstruct.add_argument("--max-evaluations", type=int, default=100)
-    offline_reconstruct.add_argument("--min-improvement", type=float, default=0.0005)
-    offline_reconstruct.add_argument("--target-score", type=float, default=0.995)
-    offline_reconstruct.add_argument("--no-profiles", action="store_true", help="Skip profile control-point fitting")
-    offline_reconstruct.set_defaults(handler=run_offline_reconstruction)
-    benchmark = commands.add_parser("benchmark-reconstruction")
-    benchmark.add_argument("manifest", help="Curated reconstruction corpus manifest")
-    benchmark.add_argument("-o", "--output", required=True, help="Aggregate benchmark report")
-    benchmark.add_argument("--work", required=True, help="Per-case artifacts folder")
-    benchmark.set_defaults(handler=run_reconstruction_benchmark)
     repository = commands.add_parser("repository")
     repository.set_defaults(handler=run_repository)
     verify = commands.add_parser("verify")

@@ -6,7 +6,7 @@ using Newtonsoft.Json.Serialization;
 namespace ShapeForge.Unity
 {
     /// <summary>
-    /// Provides the reference JSON implementation for ShapeForge documents.
+    /// Provides the default JSON implementation for ShapeForge documents.
     /// </summary>
     public sealed class ShapeJsonSerializer
     {
@@ -102,34 +102,6 @@ namespace ShapeForge.Unity
             return policy;
         }
 
-        /// <summary>Deserializes and validates a versioned reference assessment.</summary>
-        public ShapeReferenceAssessment DeserializeReferenceAssessment(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("Reference-assessment JSON cannot be empty.", nameof(json));
-
-            ShapeReferenceAssessment assessment = JsonConvert.DeserializeObject<ShapeReferenceAssessment>(json, Settings) ??
-                                                  throw new JsonSerializationException("Reference-assessment JSON produced no assessment.");
-            ShapeDiagnosticReport report = new ShapeReferenceAssessmentValidator().Analyze(assessment);
-            if (!report.IsValid)
-                throw new JsonSerializationException(report.Diagnostics[0].Message);
-            return assessment;
-        }
-
-        /// <summary>Deserializes and validates a named reference-image manifest.</summary>
-        public ShapeReferenceImageSet DeserializeReferenceImageSet(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("Reference-image JSON cannot be empty.", nameof(json));
-
-            ShapeReferenceImageSet reference = JsonConvert.DeserializeObject<ShapeReferenceImageSet>(json, Settings) ??
-                                               throw new JsonSerializationException("Reference-image JSON produced no manifest.");
-            ShapeDiagnosticReport report = new ShapeReferenceImageSetValidator().Analyze(reference);
-            if (!report.IsValid)
-                throw new JsonSerializationException(report.Diagnostics[0].Message);
-            return reference;
-        }
-
         /// <summary>Deserializes and validates a versioned semantic detail inventory.</summary>
         public ShapeDetailInventory DeserializeDetailInventory(string json)
         {
@@ -142,34 +114,6 @@ namespace ShapeForge.Unity
             if (!report.IsValid)
                 throw new JsonSerializationException(report.Diagnostics[0].Message);
             return inventory;
-        }
-
-        /// <summary>Deserializes and validates provider-neutral render comparison observations.</summary>
-        public ShapeRenderComparison DeserializeRenderComparison(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("Render-comparison JSON cannot be empty.", nameof(json));
-
-            ShapeRenderComparison comparison = JsonConvert.DeserializeObject<ShapeRenderComparison>(json, Settings) ??
-                                               throw new JsonSerializationException("Render-comparison JSON produced no comparison.");
-            ShapeDiagnosticReport report = new ShapeRenderComparisonValidator().Analyze(comparison);
-            if (!report.IsValid)
-                throw new JsonSerializationException(report.Diagnostics[0].Message);
-            return comparison;
-        }
-
-        /// <summary>Deserializes and validates an engine-neutral render-capture request.</summary>
-        public ShapeRenderCaptureRequest DeserializeRenderCaptureRequest(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("Render-capture JSON cannot be empty.", nameof(json));
-
-            ShapeRenderCaptureRequest request = JsonConvert.DeserializeObject<ShapeRenderCaptureRequest>(json, Settings) ??
-                                                throw new JsonSerializationException("Render-capture JSON produced no request.");
-            ShapeDiagnosticReport report = new ShapeRenderCaptureRequestValidator().Analyze(request);
-            if (!report.IsValid)
-                throw new JsonSerializationException(report.Diagnostics[0].Message);
-            return request;
         }
 
         /// <summary>Deserializes and validates a resumable construction plan.</summary>
@@ -198,21 +142,6 @@ namespace ShapeForge.Unity
             if (!report.IsValid)
                 throw new JsonSerializationException(report.Diagnostics[0].Message);
             return metadata;
-        }
-
-        /// <summary>Deserializes and validates a resumable reconstruction workflow.</summary>
-        public ShapeReconstructionWorkflow DeserializeReconstructionWorkflow(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("Reconstruction-workflow JSON cannot be empty.", nameof(json));
-
-            ShapeReconstructionWorkflow workflow =
-                JsonConvert.DeserializeObject<ShapeReconstructionWorkflow>(json, Settings) ??
-                throw new JsonSerializationException("Reconstruction-workflow JSON produced no workflow.");
-            ShapeDiagnosticReport report = new ShapeReconstructionWorkflowValidator().Analyze(workflow);
-            if (!report.IsValid)
-                throw new JsonSerializationException(report.Diagnostics[0].Message);
-            return workflow;
         }
 
         /// <summary>

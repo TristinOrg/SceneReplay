@@ -6,17 +6,12 @@ All notable repository-level changes are documented here. Package-specific detai
 
 ### Added
 
-- Deterministic, category-neutral reference-image preprocessing for characters, buildings, props, vehicles, and other assets.
-- A versioned reference-blueprint contract, validator, JSON Schema, and explicit low-confidence review queue.
-- A resumable reference pipeline with provenance-aware review and an explicit category-compiler handoff.
-- High-fidelity sheet evidence for top/bottom views, local details, diagrams, text regions, and labeled palette overrides.
-- Provider-free offline inverse modeling with staged parameter discovery, multi-view render scoring, rollback, invalid-candidate isolation, convergence limits, and resumable evaluation artifacts.
 - GLB 2.0 structural validation with optional external validator execution and machine-readable reports.
 - Auditable FBX/USD converter profiles that pin tool identity, version, license, formats, and command.
-- Curated reference-reconstruction corpus benchmarks with thresholds and aggregated failure modes.
 
 ### Removed
 
+- Reference-image preprocessing, image comparison, inverse fitting, and reconstruction workflow packages.
 - The legacy Fantasy Hero, Humanoid Hero, Stylized Human, and Noctis Chibi experiment implementations.
 
 ## [0.1.0] - 2026-08-01

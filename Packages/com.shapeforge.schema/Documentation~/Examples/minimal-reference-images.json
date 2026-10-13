@@ -1,9 +1,0 @@
-{
-  "schema": "shapeforge.reference-images/1.0",
-  "id": "hero/reference-1",
-  "images": [
-    { "viewId": "front", "imagePath": "reference/front.png", "weight": 2 },
-    { "viewId": "side", "imagePath": "reference/side.png", "weight": 1 },
-    { "viewId": "back", "imagePath": "reference/back.png", "weight": 1 }
-  ]
-}

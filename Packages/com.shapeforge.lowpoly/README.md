@@ -4,8 +4,6 @@ The first official ShapeForge implementation. It provides Low Poly geometry, pal
 
 Built-in Cube, Sphere, Cylinder, and Capsule shapes reuse cached Unity meshes and base materials without generating Collider components. Parameterized Wedge and Frustum shapes use flat-shaded procedural meshes; equivalent parameter sets share one cached Mesh. Profile Cage joins ordered sections whose closed profiles may differ at every depth, enabling asymmetric shells that Profile Loft cannot express. Bounded cached interpolation adds rounded continuity without expanding authoring JSON.
 
-`LowPolyReferenceProfileCageMapper` deterministically combines generic front, side, and optional back silhouettes into Profile Cage sections. Bounded resampling runs only during generation; generated geometry continues through the shared mesh cache with no per-frame work.
-
 Use `LowPolyShapeCapabilityCatalog.Instance` to query all eleven supported geometry types without reflection. `TryGet` performs a cached exact-ID lookup. Call `CreateDocument` and serialize it through the Unity Adapter only when external tools need the complete machine-readable catalog.
 
 Use `LowPolyModelGenerator` as the reusable runtime entry point for validated definitions or external ShapeForge JSON. Register style documents once, then reuse the same pipeline for subsequent models.

@@ -5,7 +5,7 @@
 ## Project Summary
 
 - Project root: `D:/git/ShapeForge`
-- Purpose: extensible procedural shape framework; Low Poly is the first official implementation.
+- Purpose: semantic intermediate layer between AI-authored 3D intent and engine-native assets; Low Poly is the first implementation.
 - Last analyzed: 2026-07-29
 - Last analyzed commit: `ef20d77`
 
@@ -31,7 +31,7 @@
 | `Assets/Scenes` | Default Unity sample scene | Confirmed | repository files |
 | `Packages/com.shapeforge.core` | Engine-neutral validation and style resolution | Confirmed | package manifest |
 | `Packages/com.shapeforge.schema` | Engine-agnostic versioned data contracts | Confirmed | package manifest |
-| `Packages/com.shapeforge.unity` | Unity generation and reference JSON adapter | Confirmed | package manifest |
+| `Packages/com.shapeforge.unity` | Unity generation and JSON adapter | Confirmed | package manifest |
 | `Packages/com.shapeforge.lowpoly` | Official Low Poly implementation | Confirmed | package manifest |
 | `Docs/AI` | Concise persistent project context | Confirmed | this document |
 
@@ -47,7 +47,7 @@ Schema and Core use assemblies with no UnityEngine references. Unity adapts Sche
 
 ## Architecture
 
-Schema provides versioned engine-agnostic shape and style documents with optional base-style references, published Draft 2020-12 JSON Schema contracts, independent profile-cage sections, and minimal external-tool examples. Core provides validation, cached style inheritance, fluent authoring, engine-neutral transform contracts, backend-independent shape capabilities, and generic semantic-template compilation/discovery without UnityEngine. The Unity Adapter owns JSON, validated generic specification serialization, GameObject generation, lifecycle-safe appearance, discovery export, and stable transform resolution. LowPoly supplies a cached eleven-shape capability catalog including independent profile cages with bounded interpolated rings, the first versioned Stylized Human semantic compiler, generic normalized reference-to-cage mapping, reusable generation pipelines, cached geometry, modern and traditional environment presets, and undoable Editor preview commands.
+Schema provides versioned engine-agnostic shape, style, patch, construction, quality, gameplay, and rig documents with published Draft 2020-12 JSON Schema contracts and minimal external-tool examples. Core provides validation, deterministic diff and patch operations, cached style inheritance, fluent authoring, engine-neutral transform contracts, backend-independent shape capabilities, semantic completeness, and semantic-template compilation/discovery without UnityEngine. The Unity Adapter owns JSON, validated generic specification serialization, GameObject generation, lifecycle-safe appearance, discovery export, portable GLB export, and stable transform resolution. LowPoly supplies a cached eleven-shape capability catalog including independent profile cages with bounded interpolated rings, the first versioned Stylized Human semantic compiler, reusable generation pipelines, cached geometry, modern and traditional environment presets, and undoable Editor preview commands.
 
 ## Coding Conventions
 
@@ -58,7 +58,7 @@ Schema provides versioned engine-agnostic shape and style documents with optiona
 ## Testing And Validation
 
 - Unity Test Framework is installed.
-- First-party EditMode tests cover fluent authoring, published JSON contracts, extraction guidance, cached style inheritance, validated capability and semantic-template discovery/export, generic reference mapping, runtime generation, prepared count- and time-budgeted batches, hierarchy adaptation, validation, lifecycle-safe appearance, shared render resources, procedural geometry including independent profile cages, remaining presets, and motion-ready pivots.
+- First-party EditMode tests cover fluent authoring, published JSON contracts, cached style inheritance, validated capability and semantic-template discovery/export, runtime generation, prepared count- and time-budgeted batches, hierarchy adaptation, validation, lifecycle-safe appearance, shared render resources, procedural geometry including independent profile cages, remaining presets, and motion-ready pivots.
 - `ShapeForge > Diagnostics > Benchmark JSON Generation` measures 200 alternating Table and Robot JSON generations, managed heap growth, and shared render-resource counts without saving generated objects.
 - The benchmark reports JSON parsing and prepared-definition generation separately. Repeated runtime models should call `LowPolyModelGenerator.ParseJson` once and reuse the validated definition.
 - Prepared batches use `UnityShapeGenerationPlan` to validate an immutable definition once before repeated generation.
@@ -83,7 +83,7 @@ Schema provides versioned engine-agnostic shape and style documents with optiona
 ## Unknowns And Confidence
 
 - The initial API and Unity JSON serialization shape are implemented but remain pre-1.0 and may evolve.
-- Motion clip serialization, additional asset-category templates, and automated reference landmark extraction remain design work.
+- Motion clip serialization and additional asset-category templates remain design work.
 - Supported Unity versions and public release license are not yet decided.
 
 ## Source Files Inspected

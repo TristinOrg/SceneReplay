@@ -74,25 +74,12 @@ namespace ShapeForge.Unity.Editor
                     ShapeQualityReport report   = new ShapeQualityGate().Evaluate(definition, policy);
                     return Result(report.Passed, JToken.FromObject(report, JsonSerializer.Create(Settings)));
                 }
-                case "assess":
-                {
-                    ShapeReferenceAssessment assessment =
-                        JsonConvert.DeserializeObject<ShapeReferenceAssessment>(Read(request.Source), Settings);
-                    ShapeDiagnosticReport report = new ShapeReferenceAssessmentValidator().Analyze(assessment);
-                    return Result(report.IsValid, JToken.FromObject(report, JsonSerializer.Create(Settings)));
-                }
                 case "inventory":
                 {
                     ShapeDefinition definition = serializer.DeserializeShape(Read(request.Source));
                     ShapeDetailInventory inventory = serializer.DeserializeDetailInventory(Read(request.Other));
                     ShapeDetailCoverageReport report = new ShapeDetailCoverageAnalyzer().Analyze(definition, inventory);
                     return Result(report.Passed, JToken.FromObject(report, JsonSerializer.Create(Settings)));
-                }
-                case "compare":
-                {
-                    ShapeRenderComparison comparison = serializer.DeserializeRenderComparison(Read(request.Source));
-                    ShapeRenderCompareReport report = new ShapeRenderCompareAggregator().Aggregate(comparison);
-                    return Result(report.IsValid, JToken.FromObject(report, JsonSerializer.Create(Settings)));
                 }
                 case "plan":
                 {
@@ -124,13 +111,6 @@ namespace ShapeForge.Unity.Editor
                     ShapeGameMetadataReport report = new ShapeGameMetadataAnalyzer().Analyze(definition, metadata);
                     return Result(report.IsValid, JToken.FromObject(report, JsonSerializer.Create(Settings)));
                 }
-                case "reconstruct":
-                {
-                    ShapeReconstructionWorkflow workflow =
-                        serializer.DeserializeReconstructionWorkflow(Read(request.Source));
-                    ShapeReconstructionStepResult result = new ShapeReconstructionOrchestrator().Advance(workflow);
-                    return Result(result.Succeeded, JToken.FromObject(result, JsonSerializer.Create(Settings)));
-                }
                 case "discover":
                 {
                     JsonSerializer json = JsonSerializer.Create(Settings);
@@ -147,36 +127,6 @@ namespace ShapeForge.Unity.Editor
                         ["templates"]    = templates
                     };
                     return Result(true, data);
-                }
-                case "render":
-                {
-                    ShapeDefinition definition = serializer.DeserializeShape(Read(request.Source));
-                    ShapeRenderCaptureRequest capture =
-                        serializer.DeserializeRenderCaptureRequest(Read(request.Other));
-                    string outputFolder = string.IsNullOrWhiteSpace(request.Argument)
-                        ? Path.Combine("Library", "ShapeForgeAutomation", "renders")
-                        : Path.GetFullPath(request.Argument);
-                    UnityEngine.GameObject generated = null;
-                    try
-                    {
-                        foreach (IShapeAutomationModelCompiler compiler in ShapeAutomationCatalogRegistry.GetModelCompilers())
-                        {
-                            if (!compiler.CanCompile(definition))
-                                continue;
-                            generated = compiler.Compile(definition);
-                            break;
-                        }
-                        if (generated == null)
-                            throw new InvalidOperationException("No registered automation compiler supports this definition.");
-                        ShapeRenderCaptureManifest manifest =
-                            UnityShapeReferenceRenderer.Render(generated, capture, outputFolder);
-                        return Result(true, JToken.FromObject(manifest, JsonSerializer.Create(Settings)));
-                    }
-                    finally
-                    {
-                        if (generated != null)
-                            UnityEngine.Object.DestroyImmediate(generated);
-                    }
                 }
                 case "export-glb":
                 {

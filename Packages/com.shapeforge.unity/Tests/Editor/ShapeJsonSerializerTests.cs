@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace ShapeForge.Unity.Tests
 {
     /// <summary>
-    /// Verifies the reference JSON contract for cross-engine ShapeForge data.
+    /// Verifies the default JSON contract for cross-engine ShapeForge data.
     /// </summary>
     public sealed class ShapeJsonSerializerTests
     {
@@ -171,38 +171,6 @@ namespace ShapeForge.Unity.Tests
         }
 
         [Test]
-        public void RenderComparisonRoundTripPreservesScoresAndTargets()
-        {
-            ShapeRenderComparison source = new()
-            {
-                ReferenceId = "hero/reference",
-                CandidateId = "hero/revision"
-            };
-            source.Views.Add(new()
-            {
-                ViewId = "front", Confidence = 0.9f,
-                Scores = new ShapeComparisonScores
-                {
-                    Silhouette = 0.8f, Proportion = 0.7f, Color = 0.6f, Detail = 0.5f
-                }
-            });
-            source.Discrepancies.Add(new()
-            {
-                Id = "head", ViewId = "front", NodeId = "head",
-                Severity = ShapeVisualDiscrepancySeverity.Warning, Message = "Head is too wide."
-            });
-            ShapeJsonSerializer serializer = new();
-
-            string json = serializer.SerializeSpecification(source);
-            ShapeRenderComparison result = serializer.DeserializeRenderComparison(json);
-
-            Assert.That(json, Does.Contain("\"schema\":\"shapeforge.render-compare/1.0\""));
-            Assert.That(json, Does.Contain("\"severity\":\"warning\""));
-            Assert.That(result.Views[0].Scores.Proportion, Is.EqualTo(0.7f));
-            Assert.That(result.Discrepancies[0].NodeId, Is.EqualTo("head"));
-        }
-
-        [Test]
         public void ConstructionPlanRoundTripPreservesDependenciesAndPatch()
         {
             ShapeConstructionPlan source = new() { Id = "hero/build" };
@@ -251,56 +219,5 @@ namespace ShapeForge.Unity.Tests
             Assert.That(json, Does.Contain("\"tags\":[\"human\",\"stylized\"]"));
         }
 
-        [Test]
-        public void GenericReferenceRoundTripPreservesMultiViewSilhouette()
-        {
-            ShapeReferenceDefinition source = new()
-            {
-                Name = "Character"
-            };
-            ShapeReferenceViewObservation front = new()
-            {
-                Minimum    = new(0.2f, 0.1f),
-                Maximum    = new(0.8f, 0.9f),
-                Confidence = 0.95f
-            };
-            front.Silhouette.Add(new(0.2f, 0.1f));
-            front.Silhouette.Add(new(0.8f, 0.1f));
-            front.Silhouette.Add(new(0.5f, 0.9f));
-            source.Parts.Add(new ShapeReferencePart
-            {
-                Id    = "head",
-                Front = front
-            });
-            ShapeJsonSerializer serializer = new();
-
-            string json = serializer.SerializeSpecification(source);
-            ShapeReferenceDefinition result = serializer.DeserializeSpecification<ShapeReferenceDefinition>(
-                json,
-                new ShapeReferenceDefinitionValidator().Validate);
-
-            Assert.That(json, Does.Contain("\"schema\":\"shapeforge.reference/1.0\""));
-            Assert.That(result.Parts[0].Front.Confidence, Is.EqualTo(0.95f));
-            Assert.That(result.Parts[0].Front.Silhouette[2], Is.EqualTo(new ForgeVector2(0.5f, 0.9f)));
-        }
-
-        [Test]
-        public void ReferenceBlueprintAcceptsPreprocessorVectorContract()
-        {
-            const string json = "{\"schema\":\"shapeforge.reference-blueprint/1.0\",\"id\":\"building\"," +
-                                "\"sourceImage\":\"building.png\",\"coordinateSystem\":\"image-normalized/top-left\"," +
-                                "\"views\":[{\"viewId\":\"source\",\"imagePath\":\"building.png\"," +
-                                "\"foregroundBounds\":{\"x\":0.1,\"y\":0.1,\"width\":0.8,\"height\":0.8}," +
-                                "\"silhouette\":[{\"x\":0.1,\"y\":0.1},{\"x\":0.9,\"y\":0.1},{\"x\":0.5,\"y\":0.9}]," +
-                                "\"confidence\":0.8}],\"classification\":{\"category\":\"unresolved\",\"confidence\":0}," +
-                                "\"reviewQueue\":[]}";
-            ShapeJsonSerializer serializer = new();
-
-            ShapeReferenceBlueprint result = serializer.DeserializeSpecification<ShapeReferenceBlueprint>(
-                json,
-                new ShapeReferenceBlueprintValidator().Validate);
-
-            Assert.That(result.Views[0].Silhouette[2], Is.EqualTo(new ForgeVector2(0.5f, 0.9f)));
-        }
     }
 }

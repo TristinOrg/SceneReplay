@@ -6,16 +6,16 @@ The public execution board is [ShapeForge Roadmap](https://github.com/orgs/Trist
 
 ## Product direction
 
-ShapeForge is an AI-era game asset compiler:
+ShapeForge is an engine-neutral semantic intermediate layer for AI-authored 3D assets:
 
 ```text
-Image / Prompt / Structured Intent
-                -> Semantic Definition
-                -> Deterministic ShapeForge Compilation
-                -> Engine-native Game Asset
+AI / Authoring Tool / Existing Asset
+                -> ShapeForge Semantic Definition
+                -> Validate / Diff / Patch
+                -> Engine Adapter / Portable Asset
 ```
 
-AI authors structured intent. ShapeForge owns deterministic validation, editing, semantic completeness, generation, and engine adaptation. Core and Schema must remain independent of render engines, concrete art styles, and AI providers.
+ShapeForge owns stable semantic identity, editable structure, deterministic validation and patches, semantic completeness, and portable engine adaptation. Rendering, geometry authoring, and image-to-3D reconstruction belong to external engines and tools. Core and Schema must remain independent of render engines, concrete art styles, and AI providers.
 
 ## Resume instructions
 
@@ -57,7 +57,7 @@ Every milestone should include, where applicable:
 ### Framework and generation foundation — Complete
 
 - Schema, Core, Unity, and Low Poly package boundaries.
-- Deterministic shape definitions, styles, capabilities, templates, references, and generation.
+- Deterministic semantic definitions, styles, capabilities, templates, validation, and generation.
 - Unity hierarchy adaptation, lifecycle-safe regeneration, cached materials, and Prefab-safe mesh storage.
 - Semantic rigs, canonical Humanoid roles, runtime Avatar creation, and FBX Humanoid animation integration.
 
@@ -70,13 +70,9 @@ Every milestone should include, where applicable:
 - Declarative Quality Gate and structural metrics — `c80c2d9`.
 - Quality/Patch schemas and LLM correction loop — `3639fc6`.
 
-### Reconstruction planning foundation — Implemented
+### De-scoped image reconstruction work
 
-- Reference Assessment contract, validation, Schema, and JSON ingestion — `a4389ad`.
-- Detail Inventory contract and definition coverage analysis — `88b99f2`.
-- Detail Inventory Schema, Unity JSON, CLI command, and documentation — `0e14b52`.
-- Deterministic multi-view Unity capture, Python image comparison, and bounded reconstruction loop — `954f32c`, `942d491`, `ba05bbc`.
-- Staged offline inverse modeling across transforms, primitive parameters, and profile cages with multi-view scoring and rollback — `adc4048`, `87e851c`, `06d7270`.
+Reference-image preprocessing, image comparison, inverse fitting, and reconstruction orchestration were removed. They expanded ShapeForge into image-to-3D tooling instead of strengthening its semantic interoperability layer. Do not restore these workflows without a demonstrated need that cannot be handled by an external authoring or reconstruction tool.
 
 ### Automation CLI — Implemented
 
@@ -86,22 +82,6 @@ Every milestone should include, where applicable:
 Current validation note: on 2026-08-12 the connected Unity Editor completed all three first-party EditMode assemblies with 22/22 tests passing and no compilation errors. Python tests and repository validation also pass.
 
 ## Ordered milestones
-
-### M1 — Render Compare IR
-
-Status: Done — [#2](https://github.com/TristinOrg/ShapeForge/issues/2). Commits `7388c62`, `0ddde54`; live validation `792eb37`.
-
-Goal: represent visual comparison results without coupling Core to cameras, renderers, or vision providers.
-
-Deliverables:
-
-- versioned comparison request/result contracts;
-- named views and observation dimensions;
-- normalized score components such as silhouette, proportion, color, and semantic-detail coverage;
-- localized discrepancy records linked to stable node/detail IDs;
-- deterministic validation and comparison aggregation;
-- JSON Schema, examples, Unity serialization, CLI command, and tests;
-- explicit boundary: external systems render and observe; ShapeForge consumes structured observations.
 
 ### M2 — Construction Pass System
 
@@ -148,12 +128,6 @@ Expand reusable templates only after the metadata foundation exists:
 
 Each library must publish discovery metadata, bounded parameters, detail inventories, quality policies, representative presets, and tests. Low Poly remains the first implementation, not the framework identity.
 
-### M5 — Reconstruction Orchestration
-
-Status: Done — [#6](https://github.com/TristinOrg/ShapeForge/issues/6). Commits `24d1925`, `ce6bacf`; live validation `792eb37`.
-
-Compose Reference Assessment, Detail Inventory, passes, Render Compare, Patch, and Quality Gate into a provider-neutral reconstruction workflow. ShapeForge must not own provider credentials, prompting clients, or hidden vision logic.
-
 ### M6 — MotionForge boundary integration
 
 Status: Done — [#7](https://github.com/TristinOrg/ShapeForge/issues/7). Commit `56cd954`; live validation `792eb37`.
@@ -181,9 +155,8 @@ Status: Done — [#9](https://github.com/TristinOrg/ShapeForge/issues/9). Commit
 Expose stable workflows only after their local APIs and Python orchestration are mature:
 
 - capability and template discovery;
-- validate, assess, inventory, compare, patch, and quality operations;
+- validate, inventory, diff, patch, and quality operations;
 - staged build execution and resumability;
-- render/observe/patch orchestration through external providers;
 - concise machine-readable results with bounded output.
 
 MCP must remain a thin orchestration surface, not a second implementation of ShapeForge rules.
@@ -191,6 +164,8 @@ MCP must remain a thin orchestration surface, not a second implementation of Sha
 ## Explicit non-goals
 
 - Competing with image-to-3D systems on raw reconstruction fidelity.
+- Ingesting reference images or fitting geometry to reference renders.
+- Owning rendering, camera, or visual-comparison systems supplied by target engines.
 - Moving provider SDKs into Schema or Core.
 - Treating Low Poly or Unity as the ShapeForge framework identity.
 - Reimplementing C# validation, Patch, Diff, or Quality Gate logic in Python or MCP.
@@ -200,7 +175,7 @@ MCP must remain a thin orchestration surface, not a second implementation of Sha
 ## Immediate continuation
 
 1. Keep `python tools/shapeforge.py repository` and `python tools/shapeforge.py verify` green as contracts evolve.
-2. Populate `shapeforge.reconstruction-corpus/1.0` manifests with licensed reference images and use `benchmark-reconstruction` to record measurable failure modes; corpus automation landed in `e2aa238`.
+2. Define and validate the ShapeForge-to-Three.js mapping for stable IDs, hierarchy, transforms, supported semantic metadata, and round-tripping edits.
 3. Run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`.
 4. Create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.
-5. Keep Godot and Unreal adapters outside the current scope until a target project and end-to-end toolchain are explicitly selected.
+5. Defer additional engine adapters until a target project and end-to-end toolchain are explicitly selected.
