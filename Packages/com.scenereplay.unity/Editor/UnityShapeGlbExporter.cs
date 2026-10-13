@@ -102,7 +102,7 @@ namespace SceneReplay.Unity.Editor
                 nodes.Add(node);
                 MeshFilter filter = transform.GetComponent<MeshFilter>();
                 Renderer renderer = transform.GetComponent<Renderer>();
-                if (filter?.sharedMesh != null && renderer != null)
+                if (filter != null && renderer != null && filter.sharedMesh != null)
                     node["mesh"] = AddMesh(filter.sharedMesh, renderer.sharedMaterials);
                 JArray children = new();
                 foreach (Transform child in transform)

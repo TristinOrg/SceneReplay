@@ -31,6 +31,8 @@ namespace SceneReplay.Unity.Tests
             definitionRoot.Add(new("cube", "Cube", TestGenerator.Type));
             ShapeDefinition definition = new("Cube", definitionRoot);
             root = new UnityShapeModelGenerator(new IUnityShapeGenerator[] { new TestGenerator() }).Generate(definition);
+            Assert.That(root.GetComponent<MeshFilter>(), Is.Null);
+            Assert.That(root.transform.GetChild(0).GetComponent<MeshFilter>(), Is.Not.Null);
 
             UnityShapeGlbExportResult result = UnityShapeGlbExporter.Export(root, OutputPath);
             string document = ReadDocument(OutputPath);
