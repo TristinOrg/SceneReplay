@@ -37,6 +37,7 @@ func _load_example(example_name: String, with_metadata: bool) -> void:
 			push_error("SceneReplay metadata could not be opened: %s" % example_name)
 			return
 		options.gameMetadata = JSON.parse_string(metadata_file.get_as_text())
+		options.compileColliders = true
 	var result: Dictionary = Adapter.compile_shape_definition(definition, options)
 	if not result.ok:
 		push_error(result.error)

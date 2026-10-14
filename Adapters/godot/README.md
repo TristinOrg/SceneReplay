@@ -8,12 +8,13 @@ This GDScript adapter compiles `scenereplay.shape/1.0` into a native Godot 4 `No
 - Compiles all eleven Low Poly shapes, including extrusion, loft, cage, lathe, and sweep profile geometry, into native Godot meshes.
 - Preserves direct RGBA overrides and resolves palette roles from the `paletteRoles` option.
 - Preserves game tags, anchors, damage zones, collider descriptions, and LOD declarations as node metadata.
+- Optionally compiles declared box, sphere, capsule, and mesh colliders to Godot physics nodes with `compileColliders: true`.
 - Applies ordered `scenereplay.patch/1.0` add/remove/move/update operations atomically and reconciles the Godot hierarchy by stable ID.
 - Preserves compatible `Node3D`/`MeshInstance3D` identity and unchanged mesh resources when patching; changed geometry is rebuilt before the live tree is touched.
 - Validates schema versions, IDs, transforms, colors, geometry profiles and budgets, and metadata bindings before creating nodes.
 - Rejects semantic rigs and mirror transforms with path-qualified errors.
 
-Collider and LOD metadata remain descriptive; this adapter does not create physics bodies or LOD switching behavior. Semantic rig compilation and patch rollback remain future adapter work. Profile meshes use polygon triangulation, bounded smoothing, and deterministic sampled loft/cage/sweep construction.
+Collider generation is opt-in so metadata-only consumers do not gain unexpected physics behavior. Mesh colliders compile as convex shapes; tags, damage zones, anchors, and LOD declarations remain descriptive. Semantic rig compilation, patch rollback, and native LOD switching remain future adapter work. Profile meshes use polygon triangulation, bounded smoothing, and deterministic sampled loft/cage/sweep construction.
 
 ## Install in a Godot project
 
@@ -24,6 +25,7 @@ const SceneReplayAdapter = preload("res://addons/scenereplay/scene_replay_adapte
 
 var result: Dictionary = SceneReplayAdapter.compile_shape_definition(shape_definition, {
 	"gameMetadata": game_metadata,
+	"compileColliders": true,
 	"paletteRoles": {"metal.dark": Color("#39404b")},
 })
 if not result.ok:

@@ -15,6 +15,7 @@ func _run() -> void:
 	_test_all_profile_geometry_compiles()
 	_test_invalid_profile_geometry_is_rejected_with_a_path()
 	_test_semantic_patch_is_atomic_and_preserves_node_identity()
+	_test_native_colliders_are_opt_in_and_engine_native()
 	_test_unresolved_metadata_binding_is_rejected()
 	if failures == 0:
 		print("Godot adapter checks passed.")
@@ -36,6 +37,7 @@ func _test_character_compiles_hierarchy_and_game_metadata() -> void:
 	_expect(nodes["sample.body"] is MeshInstance3D, "body should compile to MeshInstance3D")
 	_expect(nodes["sample.body"].get_meta("scene_replay_damage_zones", []).size() == 1, "damage zone metadata should bind to the body")
 	_expect(root.get_meta("scene_replay_tags").has("character"), "root gameplay tags should be preserved")
+	_expect(nodes["sample.body"].get_node_or_null("Collider_sample_body-collider") == null, "colliders should remain metadata-only by default")
 	var anchor_found := false
 	for child in nodes["sample.body"].get_children():
 		if child.has_meta("scene_replay_anchor") and child.get_meta("scene_replay_anchor").role == "game/weapon-socket":
@@ -150,6 +152,35 @@ func _test_semantic_patch_is_atomic_and_preserves_node_identity() -> void:
 	_collect_nodes(root, after_failure)
 	_expect(after_failure["sample.body"] == body and after_failure.has("sample.extra") and after_failure["sample.head"].name == "Updated Head", "failed patch must leave the compiled hierarchy unchanged")
 	root.free()
+
+
+func _test_native_colliders_are_opt_in_and_engine_native() -> void:
+	var definition: Dictionary = _read_json("res://examples/character.json")
+	var metadata: Dictionary = _read_json("res://examples/character.game-metadata.json")
+	metadata.colliders.append({
+		"id": "sample.head-trigger",
+		"nodeId": "sample.head",
+		"kind": "sphere",
+		"isTrigger": true,
+		"center": {"x": 0, "y": 0, "z": 0},
+		"size": {"x": 1, "y": 1, "z": 1},
+		"radius": 0.4,
+		"height": 0.8
+	})
+	var result: Dictionary = Adapter.compile_shape_definition(definition, {"gameMetadata": metadata, "compileColliders": true})
+	_expect(result.ok, "native collider option should compile supported metadata")
+	if not result.ok:
+		return
+	var nodes := {}
+	_collect_nodes(result.root, nodes)
+	var body_collision: Node = nodes["sample.body"].get_node_or_null("Collider_sample_body-collider")
+	var head_trigger: Node = nodes["sample.head"].get_node_or_null("Collider_sample_head-trigger")
+	_expect(body_collision is StaticBody3D, "non-trigger box should compile to StaticBody3D")
+	_expect(body_collision != null and body_collision.get_node("Shape").shape is BoxShape3D, "box collider should use BoxShape3D")
+	_expect(head_trigger is Area3D, "trigger sphere should compile to Area3D")
+	_expect(head_trigger != null and head_trigger.get_node("Shape").shape is SphereShape3D, "sphere trigger should use SphereShape3D")
+	_expect(result.root.get_meta("scene_replay_native_collider_count") == 2, "native collider count should be discoverable on the compiled root")
+	result.root.free()
 
 
 func _read_json(path: String) -> Dictionary:

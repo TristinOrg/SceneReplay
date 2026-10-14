@@ -23,7 +23,7 @@ const ADAPTER_DESCRIPTOR := {
 	"adapterId": "scenereplay/godot",
 	"engineId": "godot",
 	"version": "0.1.0",
-	"features": ["stable-node-ids", "hierarchy", "local-transforms", "game-metadata", "profile-geometry", "patch-application"],
+	"features": ["stable-node-ids", "hierarchy", "local-transforms", "game-metadata", "profile-geometry", "patch-application", "native-colliders"],
 	"unsupportedFeaturePolicy": "reject",
 }
 
@@ -48,8 +48,12 @@ static func compile_shape_definition(definition: Dictionary, options: Dictionary
 	var validation_error := _validate_definition(definition, node_ids)
 	if not validation_error.is_empty():
 		return _failure(validation_error)
+	if options.has("compileColliders") and not options.compileColliders is bool:
+		return _failure("compileColliders must be a boolean option.")
+	if bool(options.get("compileColliders", false)) and not options.has("gameMetadata"):
+		return _failure("compileColliders requires gameMetadata.")
 	if options.has("gameMetadata"):
-		validation_error = _validate_game_metadata(options.gameMetadata, node_ids)
+		validation_error = _validate_game_metadata(options.gameMetadata, node_ids, bool(options.get("compileColliders", false)))
 		if not validation_error.is_empty():
 			return _failure(validation_error)
 
@@ -65,7 +69,7 @@ static func compile_shape_definition(definition: Dictionary, options: Dictionary
 	root.set_meta("scene_replay_options", options.duplicate(true))
 	root.add_child(_compile_node(definition.root, options))
 	if options.has("gameMetadata"):
-		_attach_game_metadata(root, options.gameMetadata, node_ids)
+		_attach_game_metadata(root, options.gameMetadata, node_ids, bool(options.get("compileColliders", false)))
 	return {"ok": true, "root": root}
 
 
@@ -362,7 +366,7 @@ static func _validate_node(node: Dictionary, path: String, node_ids: Dictionary)
 		return "%s.id: stable node ID is required." % path
 	if node_ids.has(node_id):
 		return "%s.id: duplicate node ID '%s'." % [path, node_id]
-	node_ids[node_id] = true
+	node_ids[node_id] = node
 	var shape_type: String = str(node.get("type", ""))
 	if shape_type != GROUP_TYPE and not SUPPORTED_TYPES.has(shape_type):
 		return "%s.type: unsupported Godot shape type '%s'." % [path, shape_type]
@@ -516,7 +520,7 @@ static func _validate_profile(value: Variant, closed: bool, path: String) -> Str
 	return ""
 
 
-static func _validate_game_metadata(metadata: Variant, node_ids: Dictionary) -> String:
+static func _validate_game_metadata(metadata: Variant, node_ids: Dictionary, compile_colliders: bool = false) -> String:
 	if not metadata is Dictionary or metadata.get("schema", "") != METADATA_SCHEMA:
 		return "Unsupported SceneReplay game-metadata schema."
 	if not metadata.get("id", "") is String or str(metadata.id).strip_edges().is_empty():
@@ -551,6 +555,12 @@ static func _validate_game_metadata(metadata: Variant, node_ids: Dictionary) -> 
 					return "$.colliders[%d].kind: unsupported collider kind." % index
 				if not _valid_vector3(record.get("center")) or not _valid_vector3(record.get("size")):
 					return "$.colliders[%d]: collider center and size must be finite vectors." % index
+				if compile_colliders and record.kind == "box":
+					for component in ["x", "y", "z"]:
+						if float(record.size[component]) <= 0.0:
+							return "$.colliders[%d].size.%s must be positive for a native box collider." % [index, component]
+				if compile_colliders and record.kind == "mesh" and str(node_ids[record.nodeId].get("type", "")) == GROUP_TYPE:
+					return "$.colliders[%d].kind: mesh colliders require a mesh shape node." % index
 				if not _valid_number(record.get("radius")) or float(record.radius) <= 0.0 or not _valid_number(record.get("height")) or float(record.height) <= 0.0 or not record.get("isTrigger") is bool:
 					return "$.colliders[%d]: collider dimensions and trigger flag are invalid." % index
 	var previous_lod_height := INF
@@ -947,7 +957,7 @@ static func _create_material(node: Dictionary, options: Dictionary) -> StandardM
 	return material
 
 
-static func _attach_game_metadata(root: Node3D, metadata: Dictionary, node_ids: Dictionary) -> void:
+static func _attach_game_metadata(root: Node3D, metadata: Dictionary, node_ids: Dictionary, compile_colliders: bool) -> void:
 	var nodes := {}
 	_collect_compiled_nodes(root, nodes)
 	root.set_meta("scene_replay_game_metadata", metadata.duplicate(true))
@@ -975,6 +985,39 @@ static func _attach_game_metadata(root: Node3D, metadata: Dictionary, node_ids: 
 		var colliders: Array = nodes[collider.nodeId].get_meta("scene_replay_colliders", [])
 		colliders.append(collider.duplicate(true))
 		nodes[collider.nodeId].set_meta("scene_replay_colliders", colliders)
+		if compile_colliders:
+			_attach_native_collider(nodes[collider.nodeId], collider)
+	root.set_meta("scene_replay_native_collider_count", metadata.colliders.size() if compile_colliders else 0)
+
+
+static func _attach_native_collider(target: Node3D, definition: Dictionary) -> void:
+	var body: Node3D = Area3D.new() if definition.isTrigger else StaticBody3D.new()
+	body.name = "Collider_%s" % str(definition.id).replace("/", "_").replace(".", "_")
+	body.set_meta("scene_replay_collider", definition.duplicate(true))
+	var collision := CollisionShape3D.new()
+	collision.name = "Shape"
+	collision.position = _vector3(definition.center)
+	match str(definition.kind):
+		"box":
+			var box := BoxShape3D.new()
+			box.size = _vector3(definition.size)
+			collision.shape = box
+		"sphere":
+			var sphere := SphereShape3D.new()
+			sphere.radius = float(definition.radius)
+			collision.shape = sphere
+		"capsule":
+			var capsule := CapsuleShape3D.new()
+			capsule.radius = float(definition.radius)
+			capsule.height = maxf(float(definition.height), capsule.radius * 2.0)
+			collision.shape = capsule
+		"mesh":
+			if target is MeshInstance3D and target.mesh != null:
+				var convex := ConvexPolygonShape3D.new()
+				convex.points = target.mesh.get_faces()
+				collision.shape = convex
+	body.add_child(collision)
+	target.add_child(body)
 
 
 static func _collect_compiled_nodes(node: Node, nodes: Dictionary) -> void:
