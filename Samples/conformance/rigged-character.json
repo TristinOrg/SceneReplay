@@ -1,0 +1,54 @@
+{
+  "schema": "scenereplay.shape/1.0",
+  "name": "Shared Rig Conformance Fixture",
+  "style": "sample/neutral",
+  "rig": {
+    "type": "game/humanoid",
+    "joints": [
+      {
+        "role": "humanoid/head",
+        "nodeId": "fixture.head",
+        "rotationConstraint": {
+          "minimum": { "x": -30, "y": -45, "z": -25 },
+          "maximum": { "x": 30, "y": 45, "z": 25 }
+        }
+      },
+      {
+        "role": "humanoid/right-hand",
+        "nodeId": "fixture.hand"
+      }
+    ]
+  },
+  "root": {
+    "id": "fixture.root",
+    "name": "Rig Fixture Root",
+    "type": "core/group",
+    "transform": {
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+      "scale": { "x": 1, "y": 1, "z": 1 }
+    },
+    "children": [
+      {
+        "id": "fixture.head",
+        "name": "Head",
+        "type": "lowpoly/sphere",
+        "transform": {
+          "position": { "x": 0, "y": 1.5, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.5, "y": 0.5, "z": 0.5 }
+        }
+      },
+      {
+        "id": "fixture.hand",
+        "name": "Hand",
+        "type": "lowpoly/cube",
+        "transform": {
+          "position": { "x": 0.75, "y": 0.5, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.25, "y": 0.25, "z": 0.25 }
+        }
+      }
+    ]
+  }
+}

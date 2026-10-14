@@ -22,6 +22,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_load_example("profiles", false)
 	elif event.keycode == KEY_3:
 		_apply_patch_demo()
+	elif event.keycode == KEY_4:
+		_load_example("rigged-character", false)
 
 
 func _load_example(example_name: String, with_metadata: bool) -> void:
@@ -47,9 +49,12 @@ func _load_example(example_name: String, with_metadata: bool) -> void:
 	current_root = result.root
 	add_child(current_root)
 	if camera != null:
-		camera.position = Vector3(3.2, 2.6, 5.5) if with_metadata else Vector3(0.0, 3.6, 10.5)
+		camera.position = Vector3(0.0, 3.6, 10.5) if example_name == "profiles" else Vector3(3.2, 2.6, 5.5)
 		camera.look_at(Vector3(0.0, 0.8, 0.0))
 	print("SceneReplay Godot sample loaded %s with %d semantic nodes." % [example_name, _count_semantic_nodes(current_root)])
+	if current_root.has_meta("scene_replay_rig"):
+		var head_target := Adapter.get_rig_target(current_root, "humanoid/head")
+		print("Resolved humanoid/head to %s." % (head_target.name if head_target != null else "no target"))
 
 
 func _apply_patch_demo() -> void:

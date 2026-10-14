@@ -185,25 +185,15 @@ func _test_native_colliders_are_opt_in_and_engine_native() -> void:
 
 
 func _test_semantic_rig_roles_resolve_to_stable_nodes() -> void:
-	var definition: Dictionary = _read_json("res://examples/character.json")
-	definition.rig = {
-		"type": "game/humanoid",
-		"joints": [{
-			"role": "humanoid/head",
-			"nodeId": "sample.head",
-			"rotationConstraint": {
-				"minimum": {"x": -30, "y": -45, "z": -25},
-				"maximum": {"x": 30, "y": 45, "z": 25}
-			}
-		}]
-	}
+	var definition: Dictionary = _read_json("res://examples/rigged-character.json")
 	var result: Dictionary = Adapter.compile_shape_definition(definition)
 	_expect(result.ok, "semantic rig should compile against stable shape node IDs")
 	if not result.ok:
 		return
 	var target: Node3D = Adapter.get_rig_target(result.root, "humanoid/head")
-	_expect(target != null and target.get_meta("scene_replay").id == "sample.head", "rig role lookup should resolve to the native target node")
+	_expect(target != null and target.get_meta("scene_replay").id == "fixture.head", "rig role lookup should resolve to the native target node")
 	_expect(target != null and target.get_meta("scene_replay_rig_joints", [])[0].rotationConstraint.maximum.y == 45, "rotation constraints should be preserved on the target metadata")
+	_expect(Adapter.get_rig_target(result.root, "humanoid/right-hand").get_meta("scene_replay").id == "fixture.hand", "the shared fixture should resolve its second rig role too")
 	_expect(Adapter.ADAPTER_DESCRIPTOR.features.has("semantic-rig"), "adapter descriptor should advertise semantic-rig support")
 	result.root.free()
 	definition.rig.joints.append(definition.rig.joints[0].duplicate(true))

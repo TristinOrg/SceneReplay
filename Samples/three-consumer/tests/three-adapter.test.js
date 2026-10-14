@@ -14,27 +14,17 @@ test('descriptor advertises the supported adapter contract', () => {
 });
 
 test('semantic rig roles resolve to stable object targets and preserve rotation constraints', async () => {
-  const definition = await readJson('../scene.json');
-  definition.rig = {
-    type: 'game/humanoid',
-    joints: [{
-      role: 'humanoid/head',
-      nodeId: 'sample.head',
-      rotationConstraint: {
-        minimum: { x: -30, y: -45, z: -25 },
-        maximum: { x: 30, y: 45, z: 25 },
-      },
-    }],
-  };
+  const definition = await readJson('../examples/rigged-character.json');
   const root = compileShapeDefinition(definition);
   const target = getRigTarget(root, 'humanoid/head');
   assert.ok(target instanceof Mesh);
   assert.equal(target.userData.sceneReplay.rigJoints[0].rotationConstraint.maximum.y, 45);
   assert.equal(root.userData.sceneReplay.rig.type, 'game/humanoid');
+  assert.equal(getRigTarget(root, 'humanoid/right-hand')?.userData.sceneReplay.id, 'fixture.hand');
 
   applyShapePatch(root, {
     schema: 'scenereplay.patch/1.0',
-    operations: [{ kind: 'updateNode', nodeId: 'sample.head', siblingIndex: -1, parentId: '', update: { name: 'Rigged Head' } }],
+    operations: [{ kind: 'updateNode', nodeId: 'fixture.head', siblingIndex: -1, parentId: '', update: { name: 'Rigged Head' } }],
   });
   assert.equal(getRigTarget(root, 'humanoid/head'), target);
   assert.equal(target.name, 'Rigged Head');

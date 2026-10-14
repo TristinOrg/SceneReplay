@@ -15,6 +15,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
   applyShapePatch,
   compileShapeDefinition,
+  getRigTarget,
   type ShapeDefinition,
   type ShapeGameMetadata,
 } from '@scenereplay/three-adapter';
@@ -25,6 +26,7 @@ import weaponMetadata from '../examples/weapon.game-metadata.json';
 import buildingDefinition from '../examples/building.json';
 import buildingMetadata from '../examples/building.game-metadata.json';
 import profilesDefinition from '../examples/profiles.json';
+import riggedDefinition from '../examples/rigged-character.json';
 import './style.css';
 
 const scene = new Scene();
@@ -39,6 +41,7 @@ const examples = {
   weapon: { definition: weaponDefinition, metadata: weaponMetadata },
   building: { definition: buildingDefinition, metadata: buildingMetadata },
   profiles: { definition: profilesDefinition, metadata: undefined },
+  rigged: { definition: riggedDefinition, metadata: undefined },
 };
 
 const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -74,11 +77,20 @@ function showExample(exampleId: keyof typeof examples): void {
   });
   armRaised = false;
   document.querySelector<HTMLButtonElement>('#patch-toggle')!.hidden = exampleId !== 'character';
+  document.querySelector<HTMLButtonElement>('#rig-target')!.hidden = exampleId !== 'rigged';
   document.querySelector<HTMLButtonElement>('#patch-toggle')!.textContent = 'Raise arm with semantic patch';
   scene.add(currentModel);
   document.querySelector('#status')!.textContent =
     `${example.definition.name} · ${currentModel.children.length} semantic root node(s)`;
 }
+
+document.querySelector<HTMLButtonElement>('#rig-target')!.addEventListener('click', () => {
+  if (!currentModel) return;
+  const target = getRigTarget(currentModel, 'humanoid/head');
+  if (!target) throw new Error('The semantic rig fixture has no humanoid/head target.');
+  document.querySelector('#status')!.textContent =
+    `humanoid/head → ${target.name} (${target.userData.sceneReplay.id}) · rotation limits remain attached as metadata`;
+});
 
 document.querySelector<HTMLButtonElement>('#patch-toggle')!.addEventListener('click', () => {
   if (!currentModel) return;
