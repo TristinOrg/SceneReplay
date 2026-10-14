@@ -1,16 +1,55 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { Group, Mesh } from 'three';
+import { Color, Euler, Group, Mesh, Quaternion } from 'three';
 import { applyShapePatch, compileShapeDefinition, getRigTarget, adapterDescriptor } from '@scenereplay/three-adapter';
 
 const readJson = async relativePath => JSON.parse(await readFile(new URL(relativePath, import.meta.url), 'utf8'));
 
 test('descriptor advertises the supported adapter contract', () => {
   assert.deepEqual(adapterDescriptor.features, [
-    'stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'semantic-rig', 'patch-application',
+    'stable-node-ids', 'hierarchy', 'local-transforms', 'mirrored-instances', 'game-metadata', 'semantic-rig', 'patch-application',
   ]);
   assert.equal(adapterDescriptor.engineId, 'three');
+});
+
+test('mirror axes create Unity-compatible sibling instances and retain them through semantic patches', async () => {
+  const definition = await readJson('../scene.json');
+  const armDefinition = definition.root.children[2].children.find(node => node.id === 'sample.arm');
+  armDefinition.mirrorAxis = 'x';
+  armDefinition.transform.eulerAngles = { x: 12, y: 24, z: -65 };
+  const root = compileShapeDefinition(definition);
+  const objectFor = id => {
+    let match;
+    root.traverse(object => {
+      if (object.userData.sceneReplay?.id === id) match = object;
+    });
+    return match;
+  };
+  const arm = objectFor('sample.arm');
+  const mirroredArm = objectFor('sample.arm.mirror-x');
+  assert.ok(arm instanceof Mesh);
+  assert.ok(mirroredArm instanceof Mesh);
+  assert.equal(mirroredArm.name, 'Arm (Mirror X)');
+  assert.equal(mirroredArm.position.x, -arm.position.x);
+  assert.equal(mirroredArm.scale.x, -arm.scale.x);
+  assert.equal(mirroredArm.userData.sceneReplay.sourceId, arm.userData.sceneReplay.sourceId);
+
+  const expectedRotation = new Quaternion().setFromEuler(new Euler(12 * Math.PI / 180, 24 * Math.PI / 180, -65 * Math.PI / 180, 'XYZ'));
+  expectedRotation.set(expectedRotation.x, -expectedRotation.y, -expectedRotation.z, expectedRotation.w);
+  assert.ok(mirroredArm.quaternion.angleTo(expectedRotation) < 1e-6);
+
+  applyShapePatch(root, {
+    schema: 'scenereplay.patch/1.0',
+    operations: [{
+      kind: 'updateNode',
+      nodeId: 'sample.arm',
+      update: { transform: { position: { x: 0.9, y: 0.2, z: 0 }, eulerAngles: { x: 0, y: 0, z: -65 }, scale: { x: 0.22, y: 0.42, z: 0.22 } } },
+    }],
+  });
+  assert.equal(objectFor('sample.arm.mirror-x'), mirroredArm);
+  assert.equal(mirroredArm.position.x, -0.9);
+  root.traverse(object => object.geometry?.dispose());
 });
 
 test('semantic rig roles resolve to stable object targets and preserve rotation constraints', async () => {
@@ -169,6 +208,39 @@ test('weapon and building examples compile with their semantic metadata', async 
     const root = compileShapeDefinition(definition, { gameMetadata });
     assert.equal(root.userData.sceneReplay.gameMetadata.id, `${example}.gameplay`);
     assert.ok(root.userData.sceneReplay.gameplayTags.length > 0);
+  }
+});
+
+test('Unity Low Poly town and workbench presets compile with their shared palettes and mirror instances', async () => {
+  for (const [name, expectedNodes, expectedMirrors] of [['japanese-town', 103, 6], ['inventor-workbench', 43, 0]]) {
+    const definition = await readJson(`../examples/${name}.json`);
+    const style = await readJson(`../examples/${name}.style.json`);
+    const colors = new Map(style.palette.entries.map(entry => [entry.role, entry.color]));
+    const root = compileShapeDefinition(definition, {
+      resolveColorRole: (role, styleId) => {
+        const color = styleId === style.id ? colors.get(role) : undefined;
+        return color ? new Color(color.r, color.g, color.b) : undefined;
+      },
+    });
+    const authoredIds = new Set();
+    let authoredNodes = 0;
+    let mirrors = 0;
+    let resolvedColors = 0;
+    root.traverse(object => {
+      const node = object.userData.sceneReplay;
+      if (!node?.id) return;
+      if (node.id.includes('.mirror-')) mirrors += 1;
+      else {
+        authoredNodes += 1;
+        authoredIds.add(node.id);
+      }
+      if (object instanceof Mesh && object.material.color.getHex() !== 0xffffff) resolvedColors += 1;
+      if (object instanceof Mesh) assert.ok(object.geometry.getAttribute('position').count > 0);
+    });
+    assert.equal(authoredNodes, expectedNodes);
+    assert.equal(authoredIds.size, expectedNodes);
+    assert.equal(mirrors, expectedMirrors);
+    assert.ok(resolvedColors > 0, `${name} should resolve palette roles`);
   }
 });
 

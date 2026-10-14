@@ -1,4 +1,4 @@
-import { Color, Euler, Group, Mesh, MeshStandardMaterial } from 'three';
+import { Color, Euler, Group, Mesh, MeshStandardMaterial, Quaternion } from 'three';
 import {
   createLowPolyGeometry,
   supportedLowPolyTypes,
@@ -14,7 +14,7 @@ export const adapterDescriptor = Object.freeze({
   adapterId: 'scenereplay/three',
   engineId: 'three',
   version: '0.1.0',
-  features: Object.freeze(['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'semantic-rig', 'patch-application']),
+  features: Object.freeze(['stable-node-ids', 'hierarchy', 'local-transforms', 'mirrored-instances', 'game-metadata', 'semantic-rig', 'patch-application']),
   unsupportedFeaturePolicy: 'reject',
 });
 
@@ -33,7 +33,7 @@ export function compileShapeDefinition(definition, options = {}) {
     style: definition.style ?? '',
     adapterId: adapterDescriptor.adapterId,
   };
-  root.add(compileNode(definition.root, definition.style, options));
+  root.add(...compileNodeInstances(definition.root, definition.style, options));
   if (options.gameMetadata) attachGameMetadata(root, options.gameMetadata);
   if (definition.rig) attachRig(root, definition.rig);
   compilationOptionsByRoot.set(root, { resolveColorRole: options.resolveColorRole });
@@ -106,8 +106,8 @@ function validateDefinition(definition) {
       throw new Error(`${path}.type: unsupported shape type '${node.type}'.`);
     }
     validateLowPolyNode(node, path);
-    if (node.mirrorAxis && node.mirrorAxis !== 'none') {
-      throw new Error(`${path}.mirrorAxis: mirrored nodes are not supported by the Three.js adapter yet.`);
+    if (node.mirrorAxis !== undefined && !['none', 'x', 'y', 'z'].includes(node.mirrorAxis)) {
+      throw new Error(`${path}.mirrorAxis: expected 'none', 'x', 'y', or 'z'.`);
     }
     if (!node.transform) throw new Error(`${path}.transform: transform is required.`);
     validateVector(node.transform.position, `${path}.transform.position`);
@@ -341,9 +341,18 @@ function attachGameMetadata(compiledRoot, metadata) {
   sceneReplayRoot.lods = metadata.lods.map(lod => ({ ...lod, nodeIds: [...lod.nodeIds] }));
 }
 
-function compileNode(node, style, options) {
+function compileNodeInstances(node, style, options, idSuffix = '') {
+  const primary = compileNode(node, style, options, idSuffix);
+  const mirrorAxis = node.mirrorAxis ?? 'none';
+  if (mirrorAxis === 'none') return [primary];
+  const suffix = `.mirror-${mirrorAxis}`;
+  return [primary, compileNode(node, style, options, `${idSuffix}${suffix}`, mirrorAxis)];
+}
+
+function compileNode(node, style, options, idSuffix, mirrorAxis = 'none') {
   const object = createObject(node, style, options);
-  object.name = node.name || node.id;
+  const baseName = node.name || node.id;
+  object.name = mirrorAxis === 'none' ? baseName : `${baseName} (Mirror ${mirrorAxis.toUpperCase()})`;
   object.position.set(node.transform.position.x, node.transform.position.y, node.transform.position.z);
   object.rotation.copy(new Euler(
     degreesToRadians(node.transform.eulerAngles.x),
@@ -352,13 +361,28 @@ function compileNode(node, style, options) {
     'XYZ',
   ));
   object.scale.set(node.transform.scale.x, node.transform.scale.y, node.transform.scale.z);
+  if (mirrorAxis !== 'none') applyMirrorTransform(object, mirrorAxis);
   object.userData.sceneReplay = {
-    id: node.id,
+    id: `${node.id}${idSuffix}`,
+    sourceId: node.id,
     type: node.type,
     colorRole: node.appearance?.colorRole ?? '',
   };
-  node.children?.forEach(child => object.add(compileNode(child, style, options)));
+  node.children?.forEach(child => object.add(...compileNodeInstances(child, style, options, idSuffix)));
   return object;
+}
+
+function applyMirrorTransform(object, axis) {
+  const positionAxis = axis;
+  const quaternion = object.quaternion;
+  const mirroredRotation = new Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+
+  object.position[positionAxis] *= -1;
+  object.scale[positionAxis] *= -1;
+  if (axis === 'x') mirroredRotation.set(mirroredRotation.x, -mirroredRotation.y, -mirroredRotation.z, mirroredRotation.w);
+  else if (axis === 'y') mirroredRotation.set(-mirroredRotation.x, mirroredRotation.y, -mirroredRotation.z, mirroredRotation.w);
+  else mirroredRotation.set(-mirroredRotation.x, -mirroredRotation.y, mirroredRotation.z, mirroredRotation.w);
+  object.quaternion.copy(mirroredRotation);
 }
 
 function createObject(node, style, options) {
@@ -414,8 +438,8 @@ function materializeObject(next, existing, currentDefinitions, nextDefinitions, 
     syncObject(
       current,
       next,
-      currentDefinitions.get(key.slice('node:'.length)),
-      nextDefinitions.get(key.slice('node:'.length)),
+      currentDefinitions.get(sourceNodeId(current)),
+      nextDefinitions.get(sourceNodeId(next)),
       reuseMaterials,
     );
     result = current;
@@ -469,6 +493,11 @@ function objectIdentityKey(object) {
   if (metadata?.id) return `node:${metadata.id}`;
   if (metadata?.anchorId) return `anchor:${metadata.anchorId}`;
   return undefined;
+}
+
+function sourceNodeId(object) {
+  const metadata = object.userData?.sceneReplay;
+  return metadata?.sourceId ?? metadata?.id;
 }
 
 function collectDefinitionNodes(definition) {

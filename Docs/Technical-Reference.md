@@ -47,14 +47,14 @@ Dependency direction is one-way:
 Schema <- Core <- Unity Adapter <- Low Poly
 ```
 
-The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It supports stable node IDs, hierarchy, local transforms, semantic rig targets, game-metadata preservation, atomic semantic patches, and all eleven Low Poly geometry types. The sample includes character, weapon, building, profile geometry, and semantic rig examples plus live patch and rig-target demonstrations. Mirror transforms and engine-native collider/LOD behavior remain adapter gaps.
+The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It supports stable node IDs, hierarchy, local transforms, mirrored sibling instances, semantic rig targets, game-metadata preservation, atomic semantic patches, and all eleven Low Poly geometry types. The sample includes the Unity-authored Japanese Town and Inventor Workbench presets, plus character, weapon, building, profile geometry, and semantic rig examples. Its town and workbench JSON/style files are exported from the same Unity preset factories used by the Unity examples. Engine-native collider/LOD behavior remains adapter-specific work.
 
 The GDScript adapter is in `Adapters/godot` and has a standalone project in `Samples/godot-consumer`. It compiles stable IDs, hierarchy, local transforms, direct palette/color overrides, semantic rig roles and rotation limits, game-metadata bindings, and all eleven Low Poly types into Godot `Node3D` and `MeshInstance3D` objects. It applies atomic semantic patches and preserves compatible native node identities. An opt-in compiles declared colliders into Godot physics nodes. The sample switches between a collider-enabled character, a five-shape profile gallery, a patch demonstration, and the semantic rig fixture. Patch rollback and native LOD switching remain adapter gaps.
 
 | Adapter | Current engine support | Native semantic output |
 |---|---|---|
 | Unity | All eleven Low Poly types, stable-ID hierarchy, reversible edits, semantic rigs | Colliders, LOD groups, rig bindings, Prefab workflow |
-| Three.js | All eleven Low Poly types, stable-ID hierarchy, semantic rig targets, atomic add/remove/move/update patches | Scene metadata; rendering and physics stay with the host application |
+| Three.js | All eleven Low Poly types, stable-ID hierarchy, mirrored sibling instances, semantic rig targets, atomic add/remove/move/update patches | Scene metadata; rendering and physics stay with the host application |
 | Godot | All eleven Low Poly types, stable-ID hierarchy, semantic rig targets, atomic add/remove/move/update patches | Optional box, sphere, capsule, and convex mesh colliders; LOD metadata stays descriptive |
 | Unreal Engine | Planned | No adapter implementation yet |
 

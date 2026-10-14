@@ -34,7 +34,7 @@ SceneReplay 与 Unity、Unreal、Godot、Three.js 等引擎协作：引擎负责
 | 目标引擎 | 状态 | 当前能力 |
 |---|---|---|
 | Unity | 可用 | 完整 Package 栈、11 种 Low Poly 几何、语义 Rig、可逆补丁、原生碰撞体、LOD Group 和 GLB 导出 |
-| Three.js | 可用 | JavaScript 适配器、11 种几何、语义 Rig 目标、游戏元数据、原子语义补丁和可运行的浏览器示例 |
+| Three.js | 可用 | JavaScript 适配器、11 种几何、镜像实例、语义 Rig 目标、游戏元数据、原子语义补丁和可运行的浏览器示例 |
 | Godot 4 | 可用 | GDScript 适配器、11 种几何、语义 Rig 目标、原子补丁、可选原生碰撞体和可运行项目 |
 | Unreal Engine | 计划中 | 尚无适配器；需要实际 Unreal 项目进行原生编译和验证 |
 
@@ -53,7 +53,11 @@ npm test
 npm run dev
 ```
 
-浏览器示例包含角色、武器、建筑、Profile 几何和语义 Rig 场景。可以直接体验基于稳定 ID 的实时补丁与 Rig 目标查询。
+浏览器示例包含 Unity 预设生成的日式小镇和发明家工作台，以及角色、武器、建筑、Profile 几何和语义 Rig 场景。小镇与工作台直接复用 Unity 预设工厂生成的定义和调色板，可用于跨引擎对比。点击 **Fit view** 可适配视角，点击 **Save PNG** 可导出当前画面。
+
+| 日式小镇 | 发明家工作台 |
+|---|---|
+| ![SceneReplay 日式小镇的 Three.js 画面](Samples/three-consumer/screenshots/japanese-town.png) | ![SceneReplay 发明家工作台的 Three.js 画面](Samples/three-consumer/screenshots/inventor-workbench.png) |
 
 ### Godot
 

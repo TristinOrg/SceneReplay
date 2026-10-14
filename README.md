@@ -34,7 +34,7 @@ SceneReplay complements engines such as Unity, Unreal, Godot, and Three.js. The 
 | Target | Status | Current support |
 |---|---|---|
 | Unity | Available | Full package stack, eleven Low Poly geometry types, semantic rigs, reversible patches, native colliders, LOD groups, and GLB export |
-| Three.js | Available | JavaScript adapter, eleven geometry types, semantic rig targets, game metadata, atomic semantic patches, and runnable browser example |
+| Three.js | Available | JavaScript adapter, eleven geometry types, mirror instances, semantic rig targets, game metadata, atomic semantic patches, and runnable browser example |
 | Godot 4 | Available | GDScript adapter, eleven geometry types, semantic rig targets, atomic patches, optional native colliders, and runnable project |
 | Unreal Engine | Planned | No adapter yet; implementation awaits a consuming project for native validation |
 
@@ -53,7 +53,11 @@ npm test
 npm run dev
 ```
 
-The browser sample includes character, weapon, building, profile geometry, and semantic rig scenes. Try the live stable-ID patch and rig-target actions.
+The browser sample includes the Unity-authored Japanese Town and Inventor Workbench, along with character, weapon, building, profile geometry, and semantic rig scenes. The town and workbench reuse the exact definitions and palettes from the Unity preset factories, making them a direct cross-engine comparison. Use **Fit view** and **Save PNG** to frame and export a scene.
+
+| Japanese Town | Inventor Workbench |
+|---|---|
+| ![SceneReplay Japanese Town in Three.js](Samples/three-consumer/screenshots/japanese-town.png) | ![SceneReplay Inventor Workbench in Three.js](Samples/three-consumer/screenshots/inventor-workbench.png) |
 
 ### Godot
 

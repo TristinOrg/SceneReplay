@@ -5,7 +5,7 @@ export declare const adapterDescriptor: Readonly<{
   adapterId: 'scenereplay/three';
   engineId: 'three';
   version: '0.1.0';
-  features: readonly ['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'semantic-rig', 'patch-application'];
+  features: readonly ['stable-node-ids', 'hierarchy', 'local-transforms', 'mirrored-instances', 'game-metadata', 'semantic-rig', 'patch-application'];
   unsupportedFeaturePolicy: 'reject';
 }>;
 
@@ -21,7 +21,7 @@ export interface ShapeNode {
   id: string;
   name: string;
   type: string;
-  mirrorAxis?: string;
+  mirrorAxis?: 'none' | 'x' | 'y' | 'z';
   transform: {
     position: Vector3;
     eulerAngles: Vector3;
