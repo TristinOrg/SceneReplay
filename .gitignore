@@ -25,6 +25,8 @@
 .vscode/
 .idea/
 .gradle/
+node_modules/
+dist/
 __pycache__/
 *.py[cod]
 

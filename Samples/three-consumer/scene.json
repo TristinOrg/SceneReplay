@@ -1,0 +1,47 @@
+{
+  "schema": "scenereplay.shape/1.0",
+  "name": "SceneReplay Sample",
+  "style": "sample/neutral",
+  "root": {
+    "id": "sample.root",
+    "name": "Sample Root",
+    "type": "core/group",
+    "transform": {
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+      "scale": { "x": 1, "y": 1, "z": 1 }
+    },
+    "children": [
+      {
+        "id": "sample.body",
+        "name": "Body",
+        "type": "lowpoly/cube",
+        "transform": {
+          "position": { "x": 0, "y": 0.75, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.8, "y": 1.5, "z": 0.5 }
+        },
+        "appearance": {
+          "hasColorOverride": true,
+          "color": { "r": 0.18, "g": 0.42, "b": 0.72, "a": 1 }
+        },
+        "children": [
+          {
+            "id": "sample.head",
+            "name": "Head",
+            "type": "lowpoly/sphere",
+            "transform": {
+              "position": { "x": 0, "y": 1.2, "z": 0 },
+              "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+              "scale": { "x": 0.75, "y": 0.75, "z": 0.75 }
+            },
+            "appearance": {
+              "hasColorOverride": true,
+              "color": { "r": 0.82, "g": 0.64, "b": 0.45, "a": 1 }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
