@@ -14,6 +14,7 @@ func _run() -> void:
 	_test_weapon_compiles_capsule_geometry()
 	_test_all_profile_geometry_compiles()
 	_test_invalid_profile_geometry_is_rejected_with_a_path()
+	_test_semantic_patch_is_atomic_and_preserves_node_identity()
 	_test_unresolved_metadata_binding_is_rejected()
 	if failures == 0:
 		print("Godot adapter checks passed.")
@@ -102,6 +103,53 @@ func _test_unresolved_metadata_binding_is_rejected() -> void:
 	var result: Dictionary = Adapter.compile_shape_definition(definition, {"gameMetadata": metadata})
 	_expect(not result.ok, "unresolved gameplay metadata should be rejected")
 	_expect(str(result.get("error", "")).contains("unknown shape node"), "metadata error should identify the unresolved binding")
+
+
+func _test_semantic_patch_is_atomic_and_preserves_node_identity() -> void:
+	var definition: Dictionary = _read_json("res://examples/character.json")
+	var metadata: Dictionary = _read_json("res://examples/character.game-metadata.json")
+	var result: Dictionary = Adapter.compile_shape_definition(definition, {"gameMetadata": metadata})
+	_expect(result.ok, "character should compile before patching")
+	if not result.ok:
+		return
+	var root: Node3D = result.root
+	var before := {}
+	_collect_nodes(root, before)
+	var body: Node = before["sample.body"]
+	var arm: Node = before["sample.arm"]
+	var head: Node = before["sample.head"]
+	var body_mesh: Mesh = before["sample.body"].mesh
+	var head_mesh: Mesh = before["sample.head"].mesh
+	_expect(Adapter.ADAPTER_DESCRIPTOR.features.has("patch-application"), "adapter descriptor should advertise patch support")
+	var patch := {
+		"schema": "scenereplay.patch/1.0",
+		"operations": [
+			{"kind": "updateNode", "nodeId": "sample.head", "update": {"name": "Updated Head", "type": "lowpoly/cube", "transform": {"position": {"x": 0.1, "y": 1.3, "z": 0}, "eulerAngles": {"x": 0, "y": 0, "z": 0}, "scale": {"x": 0.75, "y": 0.75, "z": 0.75}}}},
+			{"kind": "addNode", "parentId": "sample.root", "siblingIndex": -1, "node": {"id": "sample.extra", "name": "Extra", "type": "lowpoly/cube", "transform": {"position": {"x": 2, "y": 0, "z": 0}, "eulerAngles": {"x": 0, "y": 0, "z": 0}, "scale": {"x": 0.25, "y": 0.25, "z": 0.25}}}},
+			{"kind": "moveNode", "nodeId": "sample.arm", "parentId": "sample.root", "siblingIndex": -1},
+			{"kind": "removeNode", "nodeId": "sample.wedge"}
+		]
+	}
+	result = Adapter.apply_shape_patch(root, patch)
+	_expect(result.ok and result.root == root, "valid patch should update and return the same compiled root")
+	var after := {}
+	_collect_nodes(root, after)
+	_expect(after["sample.body"] == body and after["sample.arm"] == arm, "patch should preserve compatible Godot node instances")
+	_expect(after["sample.head"] == head and after["sample.head"].mesh is BoxMesh and after["sample.head"].mesh != head_mesh, "shape changes should preserve node identity and replace incompatible geometry")
+	_expect(after["sample.body"].mesh == body_mesh, "unchanged geometry should retain its native mesh resource")
+	_expect(after.has("sample.extra") and not after.has("sample.wedge"), "patch should add and remove the requested semantic nodes")
+	_expect(after["sample.arm"].get_parent().get_meta("scene_replay").id == "sample.root", "move operation should update the native parent")
+	_expect(after["sample.head"].name == "Updated Head", "update operation should change authored fields")
+	_expect(after["sample.body"].get_meta("scene_replay_damage_zones", []).size() == 1, "patching should preserve bound gameplay metadata")
+	var failed := Adapter.apply_shape_patch(root, {"schema": "scenereplay.patch/1.0", "operations": [
+		{"kind": "updateNode", "nodeId": "sample.head", "update": {"name": "Should Roll Back"}},
+		{"kind": "removeNode", "nodeId": "missing.node"}
+	]})
+	_expect(not failed.ok and str(failed.error).contains("missing.node"), "invalid patch should return a source-aware error")
+	var after_failure := {}
+	_collect_nodes(root, after_failure)
+	_expect(after_failure["sample.body"] == body and after_failure.has("sample.extra") and after_failure["sample.head"].name == "Updated Head", "failed patch must leave the compiled hierarchy unchanged")
+	root.free()
 
 
 func _read_json(path: String) -> Dictionary:

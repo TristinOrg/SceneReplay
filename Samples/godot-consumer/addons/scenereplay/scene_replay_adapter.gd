@@ -23,7 +23,7 @@ const ADAPTER_DESCRIPTOR := {
 	"adapterId": "scenereplay/godot",
 	"engineId": "godot",
 	"version": "0.1.0",
-	"features": ["stable-node-ids", "hierarchy", "local-transforms", "game-metadata", "profile-geometry"],
+	"features": ["stable-node-ids", "hierarchy", "local-transforms", "game-metadata", "profile-geometry", "patch-application"],
 	"unsupportedFeaturePolicy": "reject",
 }
 
@@ -61,10 +61,287 @@ static func compile_shape_definition(definition: Dictionary, options: Dictionary
 		"style": str(definition.get("style", "")),
 		"adapterId": ADAPTER_DESCRIPTOR.adapterId,
 	})
+	root.set_meta("scene_replay_definition", definition.duplicate(true))
+	root.set_meta("scene_replay_options", options.duplicate(true))
 	root.add_child(_compile_node(definition.root, options))
 	if options.has("gameMetadata"):
 		_attach_game_metadata(root, options.gameMetadata, node_ids)
 	return {"ok": true, "root": root}
+
+
+static func apply_shape_patch(compiled_root: Node3D, patch: Dictionary, options: Dictionary = {}) -> Dictionary:
+	if not is_instance_valid(compiled_root) or not compiled_root.has_meta("scene_replay_definition"):
+		return _failure("Compiled root does not retain a SceneReplay definition for patching.")
+	var source: Dictionary = compiled_root.get_meta("scene_replay_definition")
+	var next_definition := source.duplicate(true)
+	var patch_error := _apply_patch_to_definition(next_definition, patch)
+	if not patch_error.is_empty():
+		return _failure(patch_error)
+	var next_options: Dictionary = compiled_root.get_meta("scene_replay_options", {}).duplicate(true)
+	for key in options:
+		next_options[key] = options[key]
+	if not options.has("gameMetadata") and compiled_root.has_meta("scene_replay_game_metadata"):
+		next_options.gameMetadata = compiled_root.get_meta("scene_replay_game_metadata").duplicate(true)
+	var candidate_result := compile_shape_definition(next_definition, next_options)
+	if not candidate_result.ok:
+		return candidate_result
+	var candidate: Node3D = candidate_result.root
+	_reconcile_compiled_root(compiled_root, candidate, source, next_definition, next_options)
+	compiled_root.name = candidate_result.root.name
+	candidate.free()
+	return {"ok": true, "root": compiled_root}
+
+
+static func _apply_patch_to_definition(definition: Dictionary, patch: Dictionary) -> String:
+	if patch.get("schema", "") != "scenereplay.patch/1.0":
+		return "Unsupported SceneReplay patch schema '%s'." % str(patch.get("schema", ""))
+	if not patch.get("operations") is Array:
+		return "Patch operations must be an array."
+	for index in range(patch.operations.size()):
+		var operation: Variant = patch.operations[index]
+		var path := "$.operations[%d]" % index
+		if not operation is Dictionary:
+			return "%s: operation is required." % path
+		var kind: String = str(operation.get("kind", ""))
+		var error := ""
+		match kind:
+			"addNode": error = _patch_add_node(definition.root, operation, path)
+			"removeNode": error = _patch_remove_node(definition.root, operation, path)
+			"moveNode": error = _patch_move_node(definition.root, operation, path)
+			"updateNode": error = _patch_update_node(definition.root, operation, path)
+			_: error = "%s.kind: unsupported patch operation '%s'." % [path, kind]
+		if not error.is_empty():
+			return error
+	return ""
+
+
+static func _patch_add_node(root: Dictionary, operation: Dictionary, path: String) -> String:
+	var added: Variant = operation.get("node")
+	if not added is Dictionary:
+		return "%s.node: add operation requires a node." % path
+	var parent_record := _find_definition_node(root, str(operation.get("parentId", "")))
+	if parent_record.is_empty():
+		return "%s.parentId: unknown shape node ID '%s'." % [path, str(operation.get("parentId", ""))]
+	var ids := {}
+	_collect_definition_ids(root, ids)
+	var id_error := _validate_added_ids(added, ids, "%s.node" % path)
+	if not id_error.is_empty():
+		return id_error
+	var children: Array = parent_record.node.get("children", [])
+	var index := _patch_index(operation, children.size(), path)
+	if index < 0:
+		return "%s.siblingIndex: index %s is outside the destination range." % [path, str(operation.get("siblingIndex", -1))]
+	children.insert(index, added.duplicate(true))
+	parent_record.node.children = children
+	return ""
+
+
+static func _patch_remove_node(root: Dictionary, operation: Dictionary, path: String) -> String:
+	var node_id := str(operation.get("nodeId", ""))
+	if node_id == str(root.get("id", "")):
+		return "%s: the root node cannot be removed." % path
+	var record := _find_definition_node(root, node_id)
+	if record.is_empty():
+		return "%s.nodeId: unknown shape node ID '%s'." % [path, node_id]
+	record.parent.children.remove_at(record.index)
+	return ""
+
+
+static func _patch_move_node(root: Dictionary, operation: Dictionary, path: String) -> String:
+	var node_id := str(operation.get("nodeId", ""))
+	var parent_id := str(operation.get("parentId", ""))
+	if node_id == str(root.get("id", "")):
+		return "%s: the root node cannot be moved." % path
+	var record := _find_definition_node(root, node_id)
+	var destination := _find_definition_node(root, parent_id)
+	if record.is_empty():
+		return "%s.nodeId: unknown shape node ID '%s'." % [path, node_id]
+	if destination.is_empty():
+		return "%s.parentId: unknown shape node ID '%s'." % [path, parent_id]
+	if node_id == parent_id or not _find_definition_node(record.node, parent_id).is_empty():
+		return "%s: moving '%s' below '%s' would create a cycle." % [path, node_id, parent_id]
+	var target: Dictionary = record.node
+	record.parent.children.remove_at(record.index)
+	var children: Array = destination.node.get("children", [])
+	var index := _patch_index(operation, children.size(), path)
+	if index < 0:
+		return "%s.siblingIndex: index %s is outside the destination range." % [path, str(operation.get("siblingIndex", -1))]
+	children.insert(index, target)
+	destination.node.children = children
+	return ""
+
+
+static func _patch_update_node(root: Dictionary, operation: Dictionary, path: String) -> String:
+	var node_id := str(operation.get("nodeId", ""))
+	var record := _find_definition_node(root, node_id)
+	if record.is_empty():
+		return "%s.nodeId: unknown shape node ID '%s'." % [path, node_id]
+	var update: Variant = operation.get("update")
+	if not update is Dictionary:
+		return "%s.update: update operation requires authored values." % path
+	for key in ["name", "type", "transform", "appearance", "mirrorAxis", "parameters", "profile", "path", "profileSections", "profileCageSections"]:
+		if update.has(key) and update[key] != null:
+			record.node[key] = update[key].duplicate(true) if update[key] is Dictionary or update[key] is Array else update[key]
+	return ""
+
+
+static func _patch_index(operation: Dictionary, child_count: int, path: String) -> int:
+	var requested: Variant = operation.get("siblingIndex", -1)
+	if not _valid_integer_range(requested, -1, child_count):
+		return -1
+	return child_count if int(requested) == -1 else int(requested)
+
+
+static func _find_definition_node(node: Dictionary, node_id: String) -> Dictionary:
+	if str(node.get("id", "")) == node_id:
+		return {"node": node, "parent": {}, "index": -1}
+	var children: Variant = node.get("children", [])
+	if not children is Array:
+		return {}
+	for index in range(children.size()):
+		if not children[index] is Dictionary:
+			continue
+		var result := _find_definition_node(children[index], node_id)
+		if not result.is_empty():
+			if result.parent.is_empty():
+				result.parent = node
+				result.index = index
+			return result
+	return {}
+
+
+static func _collect_definition_ids(node: Dictionary, ids: Dictionary) -> void:
+	ids[str(node.get("id", ""))] = true
+	for child in node.get("children", []):
+		if child is Dictionary:
+			_collect_definition_ids(child, ids)
+
+
+static func _validate_added_ids(node: Dictionary, ids: Dictionary, path: String) -> String:
+	var node_id: Variant = node.get("id", "")
+	if not node_id is String or str(node_id).strip_edges().is_empty() or ids.has(node_id):
+		return "%s.id: duplicate or missing node ID '%s'." % [path, str(node_id)]
+	ids[node_id] = true
+	var children: Variant = node.get("children", [])
+	if not children is Array:
+		return "%s.children: expected an array." % path
+	for index in range(children.size()):
+		if not children[index] is Dictionary:
+			return "%s.children[%d]: node must be an object." % [path, index]
+		var error := _validate_added_ids(children[index], ids, "%s.children[%d]" % [path, index])
+		if not error.is_empty():
+			return error
+	return ""
+
+
+static func _reconcile_compiled_root(current_root: Node3D, next_root: Node3D, current_definition: Dictionary, next_definition: Dictionary, next_options: Dictionary) -> void:
+	var current_objects := {}
+	var current_definitions := {}
+	var next_definitions := {}
+	_collect_compiled_nodes(current_root, current_objects)
+	_collect_definition_nodes(current_definition, current_definitions)
+	_collect_definition_nodes(next_definition, next_definitions)
+	var next_children: Array[Node] = []
+	var previous_options: Dictionary = current_root.get_meta("scene_replay_options", {})
+	var reuse_materials: bool = previous_options.get("paletteRoles", {}) == next_options.get("paletteRoles", {})
+	for child in next_root.get_children().duplicate():
+		var result := _materialize_compiled_node(child, current_objects, current_definitions, next_definitions, reuse_materials)
+		if is_instance_valid(child) and child.get_parent() != null:
+			child.get_parent().remove_child(child)
+		if result.get_parent() != null:
+			result.get_parent().remove_child(result)
+		next_children.append(result)
+	for child in current_root.get_children().duplicate():
+		current_root.remove_child(child)
+	for child in next_children:
+		current_root.add_child(child)
+	for node_id in current_objects:
+		var orphan: Node = current_objects[node_id]
+		if not is_instance_valid(orphan):
+			continue
+		var parent := orphan.get_parent()
+		if parent == null or not parent.has_meta("scene_replay") or not current_objects.has(str(parent.get_meta("scene_replay").get("id", ""))):
+			parent = orphan.get_parent()
+			if parent != null:
+				parent.remove_child(orphan)
+			orphan.free()
+	_copy_node_metadata(next_root, current_root)
+	current_root.set_meta("scene_replay_definition", next_definition.duplicate(true))
+	current_root.set_meta("scene_replay_options", next_options.duplicate(true))
+
+
+static func _materialize_compiled_node(next_node: Node, existing: Dictionary, current_definitions: Dictionary, next_definitions: Dictionary, reuse_materials: bool) -> Node:
+	var next_meta: Dictionary = next_node.get_meta("scene_replay", {})
+	var node_id := str(next_meta.get("id", ""))
+	var current: Node = existing.get(node_id)
+	var result := next_node
+	if current != null and current.get_class() == next_node.get_class():
+		existing.erase(node_id)
+		if current.get_parent() != null:
+			current.get_parent().remove_child(current)
+		_sync_compiled_node(current, next_node, current_definitions.get(node_id, {}), next_definitions.get(node_id, {}), reuse_materials)
+		result = current
+	var requested_children: Array = next_node.get_children().duplicate()
+	var children: Array[Node] = []
+	for child in requested_children:
+		var materialized := _materialize_compiled_node(child, existing, current_definitions, next_definitions, reuse_materials)
+		if is_instance_valid(child) and child.get_parent() != null:
+			child.get_parent().remove_child(child)
+		if materialized.get_parent() != null:
+			materialized.get_parent().remove_child(materialized)
+		children.append(materialized)
+	for child in result.get_children().duplicate():
+		result.remove_child(child)
+		if not children.has(child):
+			var child_id := str(child.get_meta("scene_replay", {}).get("id", ""))
+			if child_id.is_empty() or not existing.has(child_id):
+				child.free()
+	for child in children:
+		result.add_child(child)
+	if result != next_node:
+		if next_node.get_parent() != null:
+			next_node.get_parent().remove_child(next_node)
+		next_node.free()
+	return result
+
+
+static func _sync_compiled_node(current: Node, next: Node, current_definition: Dictionary, next_definition: Dictionary, reuse_materials: bool) -> void:
+	current.name = next.name
+	if current is Node3D and next is Node3D:
+		current.transform = next.transform
+	if current is MeshInstance3D and next is MeshInstance3D:
+		if not _same_geometry(current_definition, next_definition):
+			current.mesh = next.mesh
+		if not reuse_materials or current_definition.get("appearance", {}) != next_definition.get("appearance", {}):
+			current.material_override = next.material_override
+	_copy_node_metadata(next, current)
+
+
+static func _same_geometry(first: Dictionary, second: Dictionary) -> bool:
+	for key in ["type", "parameters", "profile", "path", "profileSections", "profileCageSections"]:
+		if first.get(key) != second.get(key):
+			return false
+	return true
+
+
+static func _copy_node_metadata(source: Node, destination: Node) -> void:
+	for key in destination.get_meta_list():
+		destination.remove_meta(key)
+	for key in source.get_meta_list():
+		destination.set_meta(key, source.get_meta(key))
+
+
+static func _collect_definition_nodes(definition: Dictionary, nodes: Dictionary) -> void:
+	var node: Dictionary = definition.root if definition.has("root") else definition
+	nodes[str(node.id)] = node
+	for child in node.get("children", []):
+		_collect_definition_node(child, nodes)
+
+
+static func _collect_definition_node(node: Dictionary, nodes: Dictionary) -> void:
+	nodes[str(node.id)] = node
+	for child in node.get("children", []):
+		_collect_definition_node(child, nodes)
 
 
 static func _validate_definition(definition: Dictionary, node_ids: Dictionary) -> String:

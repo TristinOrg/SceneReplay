@@ -20,6 +20,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_load_example("character", true)
 	elif event.keycode == KEY_2:
 		_load_example("profiles", false)
+	elif event.keycode == KEY_3:
+		_apply_patch_demo()
 
 
 func _load_example(example_name: String, with_metadata: bool) -> void:
@@ -47,6 +49,29 @@ func _load_example(example_name: String, with_metadata: bool) -> void:
 		camera.position = Vector3(3.2, 2.6, 5.5) if with_metadata else Vector3(0.0, 3.6, 10.5)
 		camera.look_at(Vector3(0.0, 0.8, 0.0))
 	print("SceneReplay Godot sample loaded %s with %d semantic nodes." % [example_name, _count_semantic_nodes(current_root)])
+
+
+func _apply_patch_demo() -> void:
+	if current_root == null or current_root.get_meta("scene_replay_definition", {}).root.id != "sample.root":
+		print("Load the character with 1 before trying the patch demo.")
+		return
+	var patch := {
+		"schema": "scenereplay.patch/1.0",
+		"operations": [{
+			"kind": "updateNode",
+			"nodeId": "sample.head",
+			"update": {
+				"type": "lowpoly/cube",
+				"name": "Patched Head",
+				"transform": {"position": {"x": 0, "y": 1.2, "z": 0}, "eulerAngles": {"x": 0, "y": 12, "z": 0}, "scale": {"x": 0.75, "y": 0.75, "z": 0.75}}
+			}
+		}]
+	}
+	var result: Dictionary = Adapter.apply_shape_patch(current_root, patch)
+	if not result.ok:
+		push_error(result.error)
+		return
+	print("Applied semantic patch to sample.head; compatible node IDs remain in place.")
 
 
 func _add_camera() -> void:

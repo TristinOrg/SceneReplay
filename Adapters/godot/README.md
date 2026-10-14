@@ -8,10 +8,12 @@ This GDScript adapter compiles `scenereplay.shape/1.0` into a native Godot 4 `No
 - Compiles all eleven Low Poly shapes, including extrusion, loft, cage, lathe, and sweep profile geometry, into native Godot meshes.
 - Preserves direct RGBA overrides and resolves palette roles from the `paletteRoles` option.
 - Preserves game tags, anchors, damage zones, collider descriptions, and LOD declarations as node metadata.
+- Applies ordered `scenereplay.patch/1.0` add/remove/move/update operations atomically and reconciles the Godot hierarchy by stable ID.
+- Preserves compatible `Node3D`/`MeshInstance3D` identity and unchanged mesh resources when patching; changed geometry is rebuilt before the live tree is touched.
 - Validates schema versions, IDs, transforms, colors, geometry profiles and budgets, and metadata bindings before creating nodes.
 - Rejects semantic rigs and mirror transforms with path-qualified errors.
 
-Collider and LOD metadata remain descriptive; this adapter does not create physics bodies or LOD switching behavior. Semantic rig compilation and atomic patch application are future adapter work. Profile meshes use polygon triangulation, bounded smoothing, and deterministic sampled loft/cage/sweep construction.
+Collider and LOD metadata remain descriptive; this adapter does not create physics bodies or LOD switching behavior. Semantic rig compilation and patch rollback remain future adapter work. Profile meshes use polygon triangulation, bounded smoothing, and deterministic sampled loft/cage/sweep construction.
 
 ## Install in a Godot project
 
@@ -28,6 +30,14 @@ if not result.ok:
 	push_error(result.error)
 else:
 	add_child(result.root)
+	var patch := {"schema": "scenereplay.patch/1.0", "operations": [{
+		"kind": "updateNode",
+		"nodeId": "sample.body",
+		"update": {"name": "Revised Body"},
+	}]}
+	var patched := SceneReplayAdapter.apply_shape_patch(result.root, patch)
+	if not patched.ok:
+		push_error(patched.error)
 ```
 
 The result dictionary contains `ok`, `root` on success, or a source-aware `error` on failure. See [`../../Samples/godot-consumer`](../../Samples/godot-consumer) for a runnable project and headless tests.
