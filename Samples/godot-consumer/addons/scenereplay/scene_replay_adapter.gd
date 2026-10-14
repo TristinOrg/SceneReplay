@@ -23,7 +23,7 @@ const ADAPTER_DESCRIPTOR := {
 	"adapterId": "scenereplay/godot",
 	"engineId": "godot",
 	"version": "0.1.0",
-	"features": ["stable-node-ids", "hierarchy", "local-transforms", "game-metadata", "profile-geometry", "patch-application", "native-colliders"],
+	"features": ["stable-node-ids", "hierarchy", "local-transforms", "game-metadata", "semantic-rig", "profile-geometry", "patch-application", "native-colliders"],
 	"unsupportedFeaturePolicy": "reject",
 }
 
@@ -56,6 +56,10 @@ static func compile_shape_definition(definition: Dictionary, options: Dictionary
 		validation_error = _validate_game_metadata(options.gameMetadata, node_ids, bool(options.get("compileColliders", false)))
 		if not validation_error.is_empty():
 			return _failure(validation_error)
+	if definition.has("rig"):
+		validation_error = _validate_rig(definition.rig, node_ids)
+		if not validation_error.is_empty():
+			return _failure(validation_error)
 
 	var root := Node3D.new()
 	root.name = str(definition.name)
@@ -68,9 +72,62 @@ static func compile_shape_definition(definition: Dictionary, options: Dictionary
 	root.set_meta("scene_replay_definition", definition.duplicate(true))
 	root.set_meta("scene_replay_options", options.duplicate(true))
 	root.add_child(_compile_node(definition.root, options))
+	if definition.has("rig"):
+		_attach_rig(root, definition.rig)
 	if options.has("gameMetadata"):
 		_attach_game_metadata(root, options.gameMetadata, node_ids, bool(options.get("compileColliders", false)))
 	return {"ok": true, "root": root}
+
+
+static func get_rig_target(compiled_root: Node3D, role: String) -> Node3D:
+	if not is_instance_valid(compiled_root) or role.strip_edges().is_empty():
+		return null
+	var nodes := {}
+	_collect_compiled_nodes(compiled_root, nodes)
+	for node in nodes.values():
+		for joint in node.get_meta("scene_replay_rig_joints", []):
+			if joint.get("role", "") == role:
+				return node
+	return null
+
+
+static func _validate_rig(rig: Variant, node_ids: Dictionary) -> String:
+	if not rig is Dictionary or not rig.get("type", "") is String or str(rig.get("type", "")).strip_edges().is_empty():
+		return "Rig requires a non-empty type."
+	if not rig.get("joints") is Array:
+		return "Rig joints must be an array."
+	var roles := {}
+	for index in range(rig.joints.size()):
+		var joint: Variant = rig.joints[index]
+		if not joint is Dictionary or not joint.get("role", "") is String or str(joint.get("role", "")).strip_edges().is_empty():
+			return "$.rig.joints[%d].role: a non-empty semantic role is required." % index
+		if roles.has(joint.role):
+			return "$.rig.joints[%d].role: duplicate rig role '%s'." % [index, joint.role]
+		roles[joint.role] = true
+		if not node_ids.has(joint.get("nodeId", "")):
+			return "$.rig.joints[%d].nodeId: rig references an unknown shape node." % index
+		if joint.has("rotationConstraint"):
+			var constraint: Variant = joint.rotationConstraint
+			if not constraint is Dictionary or not _valid_vector3(constraint.get("minimum")) or not _valid_vector3(constraint.get("maximum")):
+				return "$.rig.joints[%d].rotationConstraint: minimum and maximum must be finite vectors." % index
+			for component in ["x", "y", "z"]:
+				if float(constraint.minimum[component]) > float(constraint.maximum[component]):
+					return "$.rig.joints[%d].rotationConstraint.%s: minimum cannot exceed maximum." % [index, component]
+	return ""
+
+
+static func _attach_rig(root: Node3D, rig: Dictionary) -> void:
+	var nodes := {}
+	_collect_compiled_nodes(root, nodes)
+	root.set_meta("scene_replay_rig", {"type": rig.type, "joints": rig.joints.duplicate(true)})
+	for joint in rig.joints:
+		var target: Node3D = nodes[joint.nodeId]
+		var joints: Array = target.get_meta("scene_replay_rig_joints", [])
+		var record := {"type": rig.type, "role": joint.role, "nodeId": joint.nodeId, "restEulerAngles": target.rotation_degrees}
+		if joint.has("rotationConstraint"):
+			record.rotationConstraint = joint.rotationConstraint.duplicate(true)
+		joints.append(record)
+		target.set_meta("scene_replay_rig_joints", joints)
 
 
 static func apply_shape_patch(compiled_root: Node3D, patch: Dictionary, options: Dictionary = {}) -> Dictionary:
@@ -355,8 +412,6 @@ static func _validate_definition(definition: Dictionary, node_ids: Dictionary) -
 		return "Shape definition name must be a non-empty string."
 	if not definition.get("root") is Dictionary:
 		return "Shape definition root must be an object."
-	if definition.has("rig"):
-		return "Semantic rigs are not supported by the Godot adapter yet."
 	return _validate_node(definition.root, "$.root", node_ids)
 
 

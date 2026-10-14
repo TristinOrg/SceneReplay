@@ -8,13 +8,14 @@ This GDScript adapter compiles `scenereplay.shape/1.0` into a native Godot 4 `No
 - Compiles all eleven Low Poly shapes, including extrusion, loft, cage, lathe, and sweep profile geometry, into native Godot meshes.
 - Preserves direct RGBA overrides and resolves palette roles from the `paletteRoles` option.
 - Preserves game tags, anchors, damage zones, collider descriptions, and LOD declarations as node metadata.
+- Resolves rig joint roles to stable node IDs and stores authored rest poses plus optional rotation limits on those nodes for external motion systems.
 - Optionally compiles declared box, sphere, capsule, and mesh colliders to Godot physics nodes with `compileColliders: true`.
 - Applies ordered `scenereplay.patch/1.0` add/remove/move/update operations atomically and reconciles the Godot hierarchy by stable ID.
 - Preserves compatible `Node3D`/`MeshInstance3D` identity and unchanged mesh resources when patching; changed geometry is rebuilt before the live tree is touched.
 - Validates schema versions, IDs, transforms, colors, geometry profiles and budgets, and metadata bindings before creating nodes.
-- Rejects semantic rigs and mirror transforms with path-qualified errors.
+- Rejects mirror transforms with path-qualified errors.
 
-Collider generation is opt-in so metadata-only consumers do not gain unexpected physics behavior. Mesh colliders compile as convex shapes; tags, damage zones, anchors, and LOD declarations remain descriptive. Semantic rig compilation, patch rollback, and native LOD switching remain future adapter work. Profile meshes use polygon triangulation, bounded smoothing, and deterministic sampled loft/cage/sweep construction.
+Collider generation is opt-in so metadata-only consumers do not gain unexpected physics behavior. Mesh colliders compile as convex shapes; tags, damage zones, anchors, and LOD declarations remain descriptive. Rig roles expose transform targets and constraints without creating or playing an animation. Patch rollback and native LOD switching remain future adapter work. Profile meshes use polygon triangulation, bounded smoothing, and deterministic sampled loft/cage/sweep construction.
 
 ## Install in a Godot project
 
@@ -32,6 +33,9 @@ if not result.ok:
 	push_error(result.error)
 else:
 	add_child(result.root)
+	var head_target := SceneReplayAdapter.get_rig_target(result.root, "humanoid/head")
+	if head_target != null:
+		print("Resolved head target: ", head_target.name)
 	var patch := {"schema": "scenereplay.patch/1.0", "operations": [{
 		"kind": "updateNode",
 		"nodeId": "sample.body",

@@ -16,6 +16,7 @@ func _run() -> void:
 	_test_invalid_profile_geometry_is_rejected_with_a_path()
 	_test_semantic_patch_is_atomic_and_preserves_node_identity()
 	_test_native_colliders_are_opt_in_and_engine_native()
+	_test_semantic_rig_roles_resolve_to_stable_nodes()
 	_test_unresolved_metadata_binding_is_rejected()
 	if failures == 0:
 		print("Godot adapter checks passed.")
@@ -181,6 +182,33 @@ func _test_native_colliders_are_opt_in_and_engine_native() -> void:
 	_expect(head_trigger != null and head_trigger.get_node("Shape").shape is SphereShape3D, "sphere trigger should use SphereShape3D")
 	_expect(result.root.get_meta("scene_replay_native_collider_count") == 2, "native collider count should be discoverable on the compiled root")
 	result.root.free()
+
+
+func _test_semantic_rig_roles_resolve_to_stable_nodes() -> void:
+	var definition: Dictionary = _read_json("res://examples/character.json")
+	definition.rig = {
+		"type": "game/humanoid",
+		"joints": [{
+			"role": "humanoid/head",
+			"nodeId": "sample.head",
+			"rotationConstraint": {
+				"minimum": {"x": -30, "y": -45, "z": -25},
+				"maximum": {"x": 30, "y": 45, "z": 25}
+			}
+		}]
+	}
+	var result: Dictionary = Adapter.compile_shape_definition(definition)
+	_expect(result.ok, "semantic rig should compile against stable shape node IDs")
+	if not result.ok:
+		return
+	var target: Node3D = Adapter.get_rig_target(result.root, "humanoid/head")
+	_expect(target != null and target.get_meta("scene_replay").id == "sample.head", "rig role lookup should resolve to the native target node")
+	_expect(target != null and target.get_meta("scene_replay_rig_joints", [])[0].rotationConstraint.maximum.y == 45, "rotation constraints should be preserved on the target metadata")
+	_expect(Adapter.ADAPTER_DESCRIPTOR.features.has("semantic-rig"), "adapter descriptor should advertise semantic-rig support")
+	result.root.free()
+	definition.rig.joints.append(definition.rig.joints[0].duplicate(true))
+	result = Adapter.compile_shape_definition(definition)
+	_expect(not result.ok and str(result.error).contains("duplicate rig role"), "duplicate rig roles should be rejected with a useful diagnostic")
 
 
 func _read_json(path: String) -> Dictionary:
