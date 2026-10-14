@@ -23,3 +23,22 @@ jobs:
 
       - name: Validate packages and contracts
         run: python .github/scripts/validate_repository.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: Samples/three-consumer/package-lock.json
+
+      - name: Install Three.js example dependencies
+        working-directory: Samples/three-consumer
+        run: npm ci
+
+      - name: Test Three.js adapter
+        working-directory: Samples/three-consumer
+        run: npm test
+
+      - name: Build Three.js consumer example
+        working-directory: Samples/three-consumer
+        run: npm run build

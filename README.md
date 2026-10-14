@@ -11,7 +11,7 @@ See [ROADMAP.md](ROADMAP.md) for architecture and continuation instructions, and
 
 SceneReplay sits above runtime engines such as Three.js, Unity, Godot, and Unreal. An engine owns scene execution and rendering; SceneReplay preserves an asset's semantic structure and identity as it is authored, edited, validated, and adapted between tools. For example, an application could keep the ID of a robot's left arm stable while applying a patch to that part, then map the definition into its engine's object hierarchy.
 
-The product goal is to make the same semantic asset usable across Unity, Unreal, Godot, Three.js, and other host tools through engine-specific adapters. The current implementation provides the Schema and Core packages, a Unity adapter, the official Low Poly geometry backend, and GLB export; adapters for the other engines are planned, not implemented. SceneReplay does not render scenes or reconstruct assets from reference images, and it does not replace modeling tools. AI and other authoring tools can create or edit SceneReplay definitions, but no AI provider is required by the format or Core.
+The product goal is to make the same semantic asset usable across Unity, Unreal, Godot, Three.js, and other host tools through engine-specific adapters. The current implementation provides the Schema and Core packages, a Unity adapter, a standalone Three.js adapter, the official Low Poly geometry backend, and GLB export. Godot and Unreal adapters are planned; they are not represented as implemented. SceneReplay does not render scenes or reconstruct assets from reference images, and it does not replace modeling tools. AI and other authoring tools can create or edit SceneReplay definitions, but no AI provider is required by the format or Core.
 
 ## Release status
 
@@ -43,7 +43,7 @@ flowchart LR
     H --> M["Motion system via stable targets"]
 ```
 
-The repository contains four Unity Package Manager packages:
+The Unity integration contains four Unity Package Manager packages:
 
 | Package | Responsibility |
 |---|---|
@@ -58,6 +58,8 @@ Dependency direction is one-way:
 Schema <- Core <- Unity Adapter <- Low Poly
 ```
 
+The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It currently supports stable node IDs, hierarchy, local transforms, game-metadata preservation, and six Low Poly geometry types. The sample includes a character-like assembly plus standalone weapon and building definitions. It is a first adapter increment; advanced profile geometry, patch-driven native updates, and native collider/LOD behavior are not implemented there yet.
+
 Schema and Core have no `UnityEngine`, render-pipeline, concrete-style, or AI-provider dependency.
 
 Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their semantic features and unsupported-feature policy. Contract v1 requires stable node IDs, hierarchy, and local transforms. `ShapeAdapterConformanceValidator` checks those promises against a compiled hierarchy, including identity, parent relationships, transform values, and writable transform restoration. Unity is the first adapter to publish this descriptor and pass the shared contract; other engine adapters will use the same contract as they are added.
@@ -67,6 +69,7 @@ Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their sem
 - Unity `2022.3` LTS or newer compatible 2022.3 release
 - Newtonsoft JSON for the Unity adapter (`com.unity.nuget.newtonsoft-json` `3.2.1`)
 - Unity Test Framework only when running the included Editor tests
+- Node.js 20.19+ or 22.12+ to run the Three.js example and adapter tests
 
 The reference project currently uses Unity `2022.3.62f3`.
 
@@ -86,6 +89,18 @@ For the complete Low Poly stack, add all four packages to the consuming project'
 ```
 
 Pin production projects to a release tag. Use `main` only when intentionally testing unreleased changes.
+
+### Three.js example
+
+The standalone example runs outside Unity. From `Samples/three-consumer`:
+
+```sh
+npm ci
+npm test
+npm run dev
+```
+
+Open the local URL printed by Vite. The sample source and additional JSON definitions are in [Samples/three-consumer](Samples/three-consumer). Godot and Unreal integrations are not available yet; see [ROADMAP.md](ROADMAP.md) for the adapter sequence.
 
 ## Quick start
 

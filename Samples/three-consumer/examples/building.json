@@ -1,0 +1,62 @@
+{
+  "schema": "scenereplay.shape/1.0",
+  "name": "Small Building Assembly",
+  "style": "sample/architecture",
+  "root": {
+    "id": "building.root",
+    "name": "Building",
+    "type": "core/group",
+    "transform": {
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+      "scale": { "x": 1, "y": 1, "z": 1 }
+    },
+    "children": [
+      {
+        "id": "building.foundation",
+        "name": "Foundation",
+        "type": "lowpoly/cube",
+        "transform": {
+          "position": { "x": 0, "y": 0.1, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 2.5, "y": 0.2, "z": 2 }
+        },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.32, "g": 0.3, "b": 0.28, "a": 1 } }
+      },
+      {
+        "id": "building.walls",
+        "name": "Walls",
+        "type": "lowpoly/cube",
+        "transform": {
+          "position": { "x": 0, "y": 1, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 2, "y": 1.7, "z": 1.5 }
+        },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.68, "g": 0.49, "b": 0.3, "a": 1 } }
+      },
+      {
+        "id": "building.roof",
+        "name": "Roof",
+        "type": "lowpoly/wedge",
+        "transform": {
+          "position": { "x": 0, "y": 2.15, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 2.3, "y": 0.75, "z": 1.8 }
+        },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.42, "g": 0.17, "b": 0.12, "a": 1 } }
+      },
+      {
+        "id": "building.chimney",
+        "name": "Chimney",
+        "type": "lowpoly/frustum",
+        "transform": {
+          "position": { "x": 0.6, "y": 2.45, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.45, "y": 0.9, "z": 0.45 }
+        },
+        "parameters": { "topWidth": 0.8, "topDepth": 0.8, "bottomWidth": 1, "bottomDepth": 1 },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.36, "g": 0.2, "b": 0.16, "a": 1 } }
+      }
+    ]
+  }
+}
