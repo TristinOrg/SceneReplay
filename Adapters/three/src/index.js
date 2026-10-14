@@ -1,9 +1,11 @@
 import {
   BoxGeometry,
+  BufferGeometry,
   CapsuleGeometry,
   Color,
   CylinderGeometry,
   Euler,
+  Float32BufferAttribute,
   Group,
   Mesh,
   MeshStandardMaterial,
@@ -25,6 +27,8 @@ const supportedGeometryTypes = new Set([
   'lowpoly/sphere',
   'lowpoly/cylinder',
   'lowpoly/capsule',
+  'lowpoly/wedge',
+  'lowpoly/frustum',
 ]);
 
 /** Compiles a supported SceneReplay hierarchy into native Three.js objects. */
@@ -70,6 +74,11 @@ function validateDefinition(definition) {
     ids.add(node.id);
     if (node.type !== groupType && !supportedGeometryTypes.has(node.type)) {
       throw new Error(`${path}.type: unsupported shape type '${node.type}'.`);
+    }
+    if (node.type === 'lowpoly/frustum') {
+      for (const [key, fallback] of [['topWidth', 0.65], ['topDepth', 0.65], ['bottomWidth', 1], ['bottomDepth', 1]]) {
+        positiveParameter(node, key, fallback, `${path}.parameters.${key}`);
+      }
     }
     if (node.mirrorAxis && node.mirrorAxis !== 'none') {
       throw new Error(`${path}.mirrorAxis: mirrored nodes are not supported by the Three.js adapter yet.`);
@@ -287,9 +296,74 @@ function createObject(node, style, options) {
       return createMesh(new CylinderGeometry(0.5, 0.5, 2, 12), node, style, options);
     case 'lowpoly/capsule':
       return createMesh(new CapsuleGeometry(0.5, 1, 4, 8), node, style, options);
+    case 'lowpoly/wedge':
+      return createMesh(createWedgeGeometry(), node, style, options);
+    case 'lowpoly/frustum':
+      return createMesh(createFrustumGeometry(node), node, style, options);
     default:
       throw new Error(`Unsupported shape type '${node.type}'.`);
   }
+}
+
+function createWedgeGeometry() {
+  const bottomFrontLeft = [-0.5, -0.5, -0.5];
+  const bottomFrontRight = [0.5, -0.5, -0.5];
+  const bottomBackRight = [0.5, -0.5, 0.5];
+  const bottomBackLeft = [-0.5, -0.5, 0.5];
+  const topBackRight = [0.5, 0.5, 0.5];
+  const topBackLeft = [-0.5, 0.5, 0.5];
+  return geometryFromFaces([
+    [bottomFrontLeft, bottomFrontRight, bottomBackRight, bottomBackLeft],
+    [bottomFrontRight, bottomFrontLeft, topBackLeft, topBackRight],
+    [bottomBackLeft, bottomBackRight, topBackRight, topBackLeft],
+    [bottomFrontLeft, bottomBackLeft, topBackLeft],
+    [bottomBackRight, bottomFrontRight, topBackRight],
+  ]);
+}
+
+function createFrustumGeometry(node) {
+  const topWidth = positiveParameter(node, 'topWidth', 0.65);
+  const topDepth = positiveParameter(node, 'topDepth', 0.65);
+  const bottomWidth = positiveParameter(node, 'bottomWidth', 1);
+  const bottomDepth = positiveParameter(node, 'bottomDepth', 1);
+  const corner = (width, depth, xSign, zSign, y) => [width * xSign * 0.5, y, depth * zSign * 0.5];
+  const bfl = corner(bottomWidth, bottomDepth, -1, -1, -0.5);
+  const bfr = corner(bottomWidth, bottomDepth, 1, -1, -0.5);
+  const bbr = corner(bottomWidth, bottomDepth, 1, 1, -0.5);
+  const bbl = corner(bottomWidth, bottomDepth, -1, 1, -0.5);
+  const tfl = corner(topWidth, topDepth, -1, -1, 0.5);
+  const tfr = corner(topWidth, topDepth, 1, -1, 0.5);
+  const tbr = corner(topWidth, topDepth, 1, 1, 0.5);
+  const tbl = corner(topWidth, topDepth, -1, 1, 0.5);
+  return geometryFromFaces([
+    [bfl, bfr, bbr, bbl],
+    [tbl, tbr, tfr, tfl],
+    [bfr, bfl, tfl, tfr],
+    [bbl, bbr, tbr, tbl],
+    [bfl, bbl, tbl, tfl],
+    [bbr, bfr, tfr, tbr],
+  ]);
+}
+
+function geometryFromFaces(faces) {
+  const positions = [];
+  for (const face of faces) {
+    for (let index = 1; index < face.length - 1; index++) {
+      positions.push(...face[0], ...face[index], ...face[index + 1]);
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function positiveParameter(node, key, fallback, path = `Node '${node.id}' parameter '${key}'`) {
+  const value = node.parameters?.[key] ?? fallback;
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(`${path} must be finite and positive.`);
+  }
+  return value;
 }
 
 function createMesh(geometry, node, style, options) {

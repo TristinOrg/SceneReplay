@@ -13,6 +13,40 @@
     },
     "children": [
       {
+        "id": "sample.wedge",
+        "name": "Wedge",
+        "type": "lowpoly/wedge",
+        "transform": {
+          "position": { "x": 1.2, "y": 0.4, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 25, "z": 0 },
+          "scale": { "x": 0.8, "y": 0.8, "z": 0.8 }
+        },
+        "appearance": {
+          "hasColorOverride": true,
+          "color": { "r": 0.78, "g": 0.48, "b": 0.18, "a": 1 }
+        }
+      },
+      {
+        "id": "sample.frustum",
+        "name": "Frustum",
+        "type": "lowpoly/frustum",
+        "transform": {
+          "position": { "x": -1.2, "y": 0.5, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.8, "y": 1, "z": 0.8 }
+        },
+        "parameters": {
+          "topWidth": 0.45,
+          "topDepth": 0.45,
+          "bottomWidth": 1,
+          "bottomDepth": 1
+        },
+        "appearance": {
+          "hasColorOverride": true,
+          "color": { "r": 0.46, "g": 0.68, "b": 0.34, "a": 1 }
+        }
+      },
+      {
         "id": "sample.body",
         "name": "Body",
         "type": "lowpoly/cube",

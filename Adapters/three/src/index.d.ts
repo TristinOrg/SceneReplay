@@ -32,6 +32,7 @@ export interface ShapeNode {
     hasColorOverride?: boolean;
     color?: { r: number; g: number; b: number; a: number };
   };
+  parameters?: Record<string, number>;
   children?: ShapeNode[];
 }
 

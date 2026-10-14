@@ -11,4 +11,4 @@ npm install
 npm run dev
 ```
 
-The sample intentionally uses only `core/group` and the four primitive types currently implemented by this adapter. For other shape types, compile fails with a path-qualified unsupported-type error instead of silently dropping geometry.
+The sample uses `core/group`, the four standard primitives, a wedge, and a parameterized frustum. For other shape types, compile fails with a path-qualified unsupported-type error instead of silently dropping geometry.

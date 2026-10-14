@@ -7,7 +7,7 @@ This package compiles a `scenereplay.shape/1.0` document into a Three.js object 
 - Preserves node IDs and shape types in `Object3D.userData.sceneReplay`.
 - Preserves hierarchy, local position, local Euler rotation (degrees, XYZ order), and scale.
 - Advertises the shared `game-metadata` adapter capability and keeps its versioned source document available from the compiled root.
-- Compiles `core/group` and the Low Poly package's cube, sphere, cylinder, and capsule types.
+- Compiles `core/group` and the Low Poly package's cube, sphere, cylinder, capsule, wedge, and parameterized frustum types.
 - Preserves direct linear color overrides and accepts a callback for resolving style palette roles.
 - Preserves versioned game metadata in `userData`, creates transformable child objects for semantic anchors, and indexes damage zones and collider rules on their target nodes.
 - Rejects unknown schema versions, duplicate or missing node IDs, invalid transforms, and unsupported shape types before allocating Three.js objects.
