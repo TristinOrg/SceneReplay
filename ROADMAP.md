@@ -175,7 +175,7 @@ MCP must remain a thin orchestration surface, not a second implementation of Sce
 
 ## Immediate continuation
 
-1. build and validate the Unreal adapter against a real consuming project; keep Godot's rig and native LOD gaps visible in the feature matrix until they have engine-native implementations;
+1. build and validate the Unreal adapter against a real consuming project; keep native LOD and mirrored-geometry gaps visible in the feature matrix until they have engine-native implementations;
 2. validate metadata and reversible edits through each engine's native asset workflow;
 3. run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`;
 4. create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.

@@ -2,15 +2,46 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { Group, Mesh } from 'three';
-import { applyShapePatch, compileShapeDefinition, adapterDescriptor } from '@scenereplay/three-adapter';
+import { applyShapePatch, compileShapeDefinition, getRigTarget, adapterDescriptor } from '@scenereplay/three-adapter';
 
 const readJson = async relativePath => JSON.parse(await readFile(new URL(relativePath, import.meta.url), 'utf8'));
 
 test('descriptor advertises the supported adapter contract', () => {
   assert.deepEqual(adapterDescriptor.features, [
-    'stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'patch-application',
+    'stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'semantic-rig', 'patch-application',
   ]);
   assert.equal(adapterDescriptor.engineId, 'three');
+});
+
+test('semantic rig roles resolve to stable object targets and preserve rotation constraints', async () => {
+  const definition = await readJson('../scene.json');
+  definition.rig = {
+    type: 'game/humanoid',
+    joints: [{
+      role: 'humanoid/head',
+      nodeId: 'sample.head',
+      rotationConstraint: {
+        minimum: { x: -30, y: -45, z: -25 },
+        maximum: { x: 30, y: 45, z: 25 },
+      },
+    }],
+  };
+  const root = compileShapeDefinition(definition);
+  const target = getRigTarget(root, 'humanoid/head');
+  assert.ok(target instanceof Mesh);
+  assert.equal(target.userData.sceneReplay.rigJoints[0].rotationConstraint.maximum.y, 45);
+  assert.equal(root.userData.sceneReplay.rig.type, 'game/humanoid');
+
+  applyShapePatch(root, {
+    schema: 'scenereplay.patch/1.0',
+    operations: [{ kind: 'updateNode', nodeId: 'sample.head', siblingIndex: -1, parentId: '', update: { name: 'Rigged Head' } }],
+  });
+  assert.equal(getRigTarget(root, 'humanoid/head'), target);
+  assert.equal(target.name, 'Rigged Head');
+
+  definition.rig.joints.push({ ...definition.rig.joints[0] });
+  assert.throws(() => compileShapeDefinition(definition), /duplicate rig role/);
+  root.traverse(object => object.geometry?.dispose());
 });
 
 test('semantic patches update, add, move, and remove nodes while preserving stable object identities', async () => {

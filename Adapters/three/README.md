@@ -13,9 +13,10 @@ This package compiles a `scenereplay.shape/1.0` document into a Three.js object 
 - Preserves direct linear color overrides and accepts a callback for resolving style palette roles.
 - Preserves versioned game metadata in `userData`, creates transformable child objects for semantic anchors, and indexes damage zones and collider rules on their target nodes.
 - Rejects unknown schema versions, duplicate or missing node IDs, invalid transforms, and unsupported shape types before allocating Three.js objects.
-- Rejects semantic rigs and mirrored nodes until those features have explicit Three.js mappings.
+- Resolves semantic rig roles to stable `Object3D` targets and preserves authored rest poses and optional rotation limits in `userData.sceneReplay.rigJoints`.
+- Rejects mirrored nodes until that feature has an explicit Three.js mapping.
 
-Semantic rigs, mirror transforms, and native collider/LOD generation are not implemented yet. Collider rules and LOD levels are preserved as declarative metadata; this adapter does not supply a physics engine or generate alternate LOD meshes. The profile sweep follows Three.js `ExtrudeGeometry` path behavior and does not provide a parallel-transport frame for tight turns. A node whose authored type changes between a Three.js `Group` and `Mesh` must be replaced because those native classes are not interchangeable.
+Rig roles expose transform targets for an external animation system; this adapter does not create a `Skeleton` or play animation. Mirror transforms and native collider/LOD generation are not implemented. Collider rules and LOD levels are preserved as declarative metadata; this adapter does not supply a physics engine or generate alternate LOD meshes. The profile sweep follows Three.js `ExtrudeGeometry` path behavior and does not provide a parallel-transport frame for tight turns. A node whose authored type changes between a Three.js `Group` and `Mesh` must be replaced because those native classes are not interchangeable.
 
 ## Use
 

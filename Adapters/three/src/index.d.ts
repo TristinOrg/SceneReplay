@@ -1,11 +1,11 @@
-import type { ColorRepresentation, Group } from 'three';
+import type { ColorRepresentation, Group, Object3D } from 'three';
 
 export declare const adapterDescriptor: Readonly<{
   schema: 'scenereplay.adapter/1.0';
   adapterId: 'scenereplay/three';
   engineId: 'three';
   version: '0.1.0';
-  features: readonly ['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'patch-application'];
+  features: readonly ['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'semantic-rig', 'patch-application'];
   unsupportedFeaturePolicy: 'reject';
 }>;
 
@@ -13,7 +13,7 @@ export interface ShapeDefinition {
   schema: 'scenereplay.shape/1.0';
   name: string;
   style?: string;
-  rig?: unknown;
+  rig?: ShapeRigDefinition;
   root: ShapeNode;
 }
 
@@ -53,6 +53,15 @@ export interface Vector3 {
   x: number;
   y: number;
   z: number;
+}
+
+export interface ShapeRigDefinition {
+  type: string;
+  joints: Array<{
+    role: string;
+    nodeId: string;
+    rotationConstraint?: { minimum: Vector3; maximum: Vector3 };
+  }>;
 }
 
 export interface ThreeAdapterOptions {
@@ -109,6 +118,9 @@ export declare function compileShapeDefinition(
 
 /** Validates and preserves gameplay metadata on a compiled Three.js hierarchy. */
 export declare function applyGameMetadata(compiledRoot: Group, metadata: ShapeGameMetadata): Group;
+
+/** Resolves a semantic rig role to its stable native Object3D transform target. */
+export declare function getRigTarget(compiledRoot: Group, role: string): Object3D | undefined;
 
 /** Applies an atomic semantic patch and reuses Three.js objects whose stable IDs and object types remain compatible. */
 export declare function applyShapePatch(

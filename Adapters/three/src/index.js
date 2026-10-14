@@ -14,7 +14,7 @@ export const adapterDescriptor = Object.freeze({
   adapterId: 'scenereplay/three',
   engineId: 'three',
   version: '0.1.0',
-  features: Object.freeze(['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'patch-application']),
+  features: Object.freeze(['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'semantic-rig', 'patch-application']),
   unsupportedFeaturePolicy: 'reject',
 });
 
@@ -35,6 +35,7 @@ export function compileShapeDefinition(definition, options = {}) {
   };
   root.add(compileNode(definition.root, definition.style, options));
   if (options.gameMetadata) attachGameMetadata(root, options.gameMetadata);
+  if (definition.rig) attachRig(root, definition.rig);
   compilationOptionsByRoot.set(root, { resolveColorRole: options.resolveColorRole });
   sourceDefinitionsByRoot.set(root, cloneJson(definition));
   return root;
@@ -76,6 +77,17 @@ export function applyGameMetadata(compiledRoot, metadata) {
   return compiledRoot;
 }
 
+/** Resolves a semantic rig role to its stable native Object3D transform target. */
+export function getRigTarget(compiledRoot, role) {
+  if (typeof role !== 'string' || !role.trim()) return undefined;
+  const nodes = collectCompiledNodes(compiledRoot);
+  for (const node of nodes.values()) {
+    const joint = node.userData.sceneReplay?.rigJoints?.find(candidate => candidate.role === role);
+    if (joint) return node;
+  }
+  return undefined;
+}
+
 function validateDefinition(definition) {
   if (definition?.schema !== 'scenereplay.shape/1.0') {
     throw new Error(`Unsupported SceneReplay schema '${definition?.schema ?? ''}'.`);
@@ -84,8 +96,6 @@ function validateDefinition(definition) {
     throw new Error('Shape definition name must be a non-empty string.');
   }
   if (!definition.root) throw new Error('Shape definition root is required.');
-  if (definition.rig) throw new Error('Semantic rigs are not supported by the Three.js adapter yet.');
-
   const ids = new Set();
   const visit = (node, path) => {
     if (!node || typeof node !== 'object') throw new Error(`${path}: node is required.`);
@@ -118,6 +128,57 @@ function validateDefinition(definition) {
   };
 
   visit(definition.root, '$.root');
+  if (definition.rig !== undefined) validateRig(definition.rig, ids);
+}
+
+function validateRig(rig, nodeIds) {
+  if (!rig || typeof rig !== 'object' || typeof rig.type !== 'string' || !rig.type.trim()) {
+    throw new Error('Rig requires a non-empty type.');
+  }
+  if (!Array.isArray(rig.joints)) throw new Error('Rig joints must be an array.');
+  const roles = new Set();
+  rig.joints.forEach((joint, index) => {
+    const path = `$.rig.joints[${index}]`;
+    if (!joint || typeof joint.role !== 'string' || !joint.role.trim()) {
+      throw new Error(`${path}.role: a non-empty semantic role is required.`);
+    }
+    if (roles.has(joint.role)) throw new Error(`${path}.role: duplicate rig role '${joint.role}'.`);
+    roles.add(joint.role);
+    if (typeof joint.nodeId !== 'string' || !nodeIds.has(joint.nodeId)) {
+      throw new Error(`${path}.nodeId: rig references an unknown shape node '${joint.nodeId ?? ''}'.`);
+    }
+    if (joint.rotationConstraint !== undefined) {
+      const { minimum, maximum } = joint.rotationConstraint ?? {};
+      validateVector(minimum, `${path}.rotationConstraint.minimum`);
+      validateVector(maximum, `${path}.rotationConstraint.maximum`);
+      for (const component of ['x', 'y', 'z']) {
+        if (minimum[component] > maximum[component]) {
+          throw new Error(`${path}.rotationConstraint.${component}: minimum cannot exceed maximum.`);
+        }
+      }
+    }
+  });
+}
+
+function attachRig(compiledRoot, rig) {
+  const nodes = collectCompiledNodes(compiledRoot);
+  const snapshot = cloneJson(rig);
+  compiledRoot.userData.sceneReplay.rig = snapshot;
+  for (const joint of snapshot.joints) {
+    const target = nodes.get(joint.nodeId);
+    target.userData.sceneReplay.rigJoints ??= [];
+    target.userData.sceneReplay.rigJoints.push({
+      type: snapshot.type,
+      role: joint.role,
+      nodeId: joint.nodeId,
+      restEulerAngles: {
+        x: target.rotation.x * 180 / Math.PI,
+        y: target.rotation.y * 180 / Math.PI,
+        z: target.rotation.z * 180 / Math.PI,
+      },
+      ...(joint.rotationConstraint ? { rotationConstraint: joint.rotationConstraint } : {}),
+    });
+  }
 }
 
 function validateVector(value, path) {
