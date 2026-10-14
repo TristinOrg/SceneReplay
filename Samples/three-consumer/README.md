@@ -11,4 +11,4 @@ npm install
 npm run dev
 ```
 
-The examples cover all eleven currently supported adapter shape types, stable IDs, local transforms, palette overrides, semantic anchors, damage zones, collider rules, and LOD declarations. The profile gallery demonstrates extrusion, loft, cage, lathe, and sweep geometry. For other shape types, compilation fails with a path-qualified unsupported-type error instead of silently dropping geometry.
+The examples cover all eleven currently supported adapter shape types, stable IDs, local transforms, palette overrides, semantic anchors, damage zones, collider rules, and LOD declarations. In the character example, use **Raise arm with semantic patch** to update a live node by stable ID, then restore it; the mesh object is reused across both edits. The profile gallery demonstrates extrusion, loft, cage, lathe, and sweep geometry. For other shape types, compilation fails with a path-qualified unsupported-type error instead of silently dropping geometry.

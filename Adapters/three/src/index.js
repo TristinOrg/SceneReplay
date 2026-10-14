@@ -4,13 +4,17 @@ import {
   supportedLowPolyTypes,
   validateLowPolyNode,
 } from './geometries.js';
+import { applyPatchToDefinition } from './patch.js';
+
+const compilationOptionsByRoot = new WeakMap();
+const sourceDefinitionsByRoot = new WeakMap();
 
 export const adapterDescriptor = Object.freeze({
   schema: 'scenereplay.adapter/1.0',
   adapterId: 'scenereplay/three',
   engineId: 'three',
   version: '0.1.0',
-  features: Object.freeze(['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata']),
+  features: Object.freeze(['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'patch-application']),
   unsupportedFeaturePolicy: 'reject',
 });
 
@@ -31,7 +35,37 @@ export function compileShapeDefinition(definition, options = {}) {
   };
   root.add(compileNode(definition.root, definition.style, options));
   if (options.gameMetadata) attachGameMetadata(root, options.gameMetadata);
+  compilationOptionsByRoot.set(root, { resolveColorRole: options.resolveColorRole });
+  sourceDefinitionsByRoot.set(root, cloneJson(definition));
   return root;
+}
+
+/** Applies an engine-neutral semantic patch atomically and preserves compatible Object3D identities. */
+export function applyShapePatch(compiledRoot, patch, options = {}) {
+  collectCompiledNodes(compiledRoot);
+  const state = compiledRoot.userData.sceneReplay;
+  const sourceDefinition = sourceDefinitionsByRoot.get(compiledRoot);
+  if (!sourceDefinition) throw new Error('The compiled hierarchy has no retained source definition for patching.');
+  const nextDefinition = applyPatchToDefinition(sourceDefinition, patch);
+  const gameMetadata = options.gameMetadata ?? state.gameMetadata;
+  const currentOptions = compilationOptionsByRoot.get(compiledRoot) ?? {};
+  const nextOptions = { ...currentOptions, ...options, gameMetadata };
+  const nextRoot = compileShapeDefinition(nextDefinition, {
+    ...nextOptions,
+  });
+
+  reconcileChildren(
+    compiledRoot,
+    nextRoot,
+    collectDefinitionNodes(sourceDefinition),
+    collectDefinitionNodes(nextDefinition),
+    currentOptions.resolveColorRole === nextOptions.resolveColorRole,
+  );
+  compiledRoot.name = nextRoot.name;
+  compiledRoot.userData.sceneReplay = nextRoot.userData.sceneReplay;
+  compilationOptionsByRoot.set(compiledRoot, compilationOptionsByRoot.get(nextRoot));
+  sourceDefinitionsByRoot.set(compiledRoot, nextDefinition);
+  return compiledRoot;
 }
 
 /** Preserves validated game metadata on the matching objects in a compiled hierarchy. */
@@ -290,4 +324,117 @@ function createMesh(geometry, node, style, options) {
 
 function degreesToRadians(degrees) {
   return degrees * Math.PI / 180;
+}
+
+function reconcileChildren(currentParent, nextParent, currentDefinitions, nextDefinitions, reuseMaterials) {
+  const existing = new Map();
+  currentParent.traverse(object => {
+    const key = objectIdentityKey(object);
+    if (key) existing.set(key, object);
+  });
+  const nextChildren = nextParent.children.map(child => materializeObject(
+    child, existing, currentDefinitions, nextDefinitions, reuseMaterials,
+  ));
+  const unused = new Set(existing.values());
+  for (const object of unused) {
+    if (!object.parent || !unused.has(object.parent)) disposeObjectTree(object);
+  }
+  currentParent.clear();
+  if (nextChildren.length > 0) currentParent.add(...nextChildren);
+}
+
+function materializeObject(next, existing, currentDefinitions, nextDefinitions, reuseMaterials) {
+  const key = objectIdentityKey(next);
+  const current = key ? existing.get(key) : undefined;
+  let result = next;
+  if (current && current.constructor === next.constructor) {
+    existing.delete(key);
+    current.parent?.remove(current);
+    syncObject(
+      current,
+      next,
+      currentDefinitions.get(key.slice('node:'.length)),
+      nextDefinitions.get(key.slice('node:'.length)),
+      reuseMaterials,
+    );
+    result = current;
+  }
+
+  const children = next.children.map(child => materializeObject(
+    child, existing, currentDefinitions, nextDefinitions, reuseMaterials,
+  ));
+  result.clear();
+  if (children.length > 0) result.add(...children);
+  return result;
+}
+
+function syncObject(current, next, currentDefinition, nextDefinition, reuseMaterials) {
+  current.name = next.name;
+  current.position.copy(next.position);
+  current.rotation.copy(next.rotation);
+  current.scale.copy(next.scale);
+  current.userData = next.userData;
+  if (current instanceof Mesh) {
+    if (geometrySignature(currentDefinition) === geometrySignature(nextDefinition)) {
+      next.geometry.dispose();
+    } else {
+      current.geometry.dispose();
+      current.geometry = next.geometry;
+    }
+    if (reuseMaterials && jsonSignature(currentDefinition?.appearance) === jsonSignature(nextDefinition?.appearance)) {
+      disposeMaterial(next.material);
+    } else {
+      disposeMaterial(current.material);
+      current.material = next.material;
+    }
+  }
+}
+
+function disposeObjectTree(object) {
+  if (object instanceof Mesh) {
+    object.geometry.dispose();
+    disposeMaterial(object.material);
+  }
+  object.children.forEach(disposeObjectTree);
+}
+
+function disposeMaterial(material) {
+  const materials = Array.isArray(material) ? material : [material];
+  materials.forEach(item => item.dispose());
+}
+
+function objectIdentityKey(object) {
+  const metadata = object.userData?.sceneReplay;
+  if (metadata?.id) return `node:${metadata.id}`;
+  if (metadata?.anchorId) return `anchor:${metadata.anchorId}`;
+  return undefined;
+}
+
+function collectDefinitionNodes(definition) {
+  const nodes = new Map();
+  const visit = node => {
+    nodes.set(node.id, node);
+    node.children?.forEach(visit);
+  };
+  visit(definition.root);
+  return nodes;
+}
+
+function geometrySignature(node) {
+  return jsonSignature(node && {
+    type: node.type,
+    parameters: node.parameters,
+    profile: node.profile,
+    path: node.path,
+    profileSections: node.profileSections,
+    profileCageSections: node.profileCageSections,
+  });
+}
+
+function jsonSignature(value) {
+  return JSON.stringify(value);
+}
+
+function cloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
 }

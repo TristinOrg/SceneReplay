@@ -58,11 +58,11 @@ Dependency direction is one-way:
 Schema <- Core <- Unity Adapter <- Low Poly
 ```
 
-The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It supports stable node IDs, hierarchy, local transforms, game-metadata preservation, and all eleven Low Poly geometry types. The sample includes character, weapon, building, and profile geometry galleries. Semantic rigs, mirror transforms, patch-driven native updates, and engine-native collider/LOD behavior remain adapter gaps.
+The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It supports stable node IDs, hierarchy, local transforms, game-metadata preservation, atomic semantic patches, and all eleven Low Poly geometry types. The sample includes character, weapon, building, and profile geometry galleries plus a live stable-ID patch demonstration. Semantic rigs, mirror transforms, and engine-native collider/LOD behavior remain adapter gaps.
 
 Schema and Core have no `UnityEngine`, render-pipeline, concrete-style, or AI-provider dependency.
 
-Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their semantic features and unsupported-feature policy. Contract v1 requires stable node IDs, hierarchy, and local transforms. `ShapeAdapterConformanceValidator` checks those promises against a compiled hierarchy, including identity, parent relationships, transform values, and writable transform restoration. Unity is the first adapter to publish this descriptor and pass the shared contract; other engine adapters will use the same contract as they are added.
+Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their semantic features and unsupported-feature policy. Contract v1 requires stable node IDs, hierarchy, and local transforms. `ShapeAdapterConformanceValidator` checks those promises against a compiled hierarchy, including identity, parent relationships, transform values, and writable transform restoration. Unity passes the shared C# conformance validator; the JavaScript Three.js adapter has its own Node.js conformance coverage for stable identity, hierarchy, transforms, metadata, and patch application.
 
 ## Requirements
 

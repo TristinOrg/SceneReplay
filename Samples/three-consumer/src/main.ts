@@ -13,6 +13,7 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
+  applyShapePatch,
   compileShapeDefinition,
   type ShapeDefinition,
   type ShapeGameMetadata,
@@ -55,6 +56,7 @@ controls.enableDamping = true;
 controls.update();
 
 let currentModel: Group | undefined;
+let armRaised = false;
 function showExample(exampleId: keyof typeof examples): void {
   if (currentModel) {
     scene.remove(currentModel);
@@ -70,9 +72,46 @@ function showExample(exampleId: keyof typeof examples): void {
   currentModel = compileShapeDefinition(example.definition as ShapeDefinition, {
     gameMetadata: example.metadata as ShapeGameMetadata | undefined,
   });
+  armRaised = false;
+  document.querySelector<HTMLButtonElement>('#patch-toggle')!.hidden = exampleId !== 'character';
+  document.querySelector<HTMLButtonElement>('#patch-toggle')!.textContent = 'Raise arm with semantic patch';
   scene.add(currentModel);
   document.querySelector('#status')!.textContent =
     `${example.definition.name} · ${currentModel.children.length} semantic root node(s)`;
+}
+
+document.querySelector<HTMLButtonElement>('#patch-toggle')!.addEventListener('click', () => {
+  if (!currentModel) return;
+  const arm = findNodeById(currentModel, 'sample.arm');
+  const nextX = armRaised ? 0.55 : 0.9;
+  applyShapePatch(currentModel, {
+    schema: 'scenereplay.patch/1.0',
+    operations: [{
+      kind: 'updateNode',
+      nodeId: 'sample.arm',
+      parentId: '',
+      siblingIndex: -1,
+      update: {
+        transform: {
+          position: { x: nextX, y: 0.2, z: 0 },
+          eulerAngles: { x: 0, y: 0, z: -65 },
+          scale: { x: 0.22, y: 0.42, z: 0.22 },
+        },
+      },
+    }],
+  });
+  if (findNodeById(currentModel, 'sample.arm') !== arm) throw new Error('Semantic patch replaced a compatible Three.js object.');
+  armRaised = !armRaised;
+  document.querySelector<HTMLButtonElement>('#patch-toggle')!.textContent =
+    armRaised ? 'Restore arm with semantic patch' : 'Raise arm with semantic patch';
+});
+
+function findNodeById(root: Group, id: string): Mesh | undefined {
+  let match: Mesh | undefined;
+  root.traverse(object => {
+    if (object instanceof Mesh && object.userData.sceneReplay?.id === id) match = object;
+  });
+  return match;
 }
 
 const picker = document.querySelector<HTMLSelectElement>('#example-picker')!;

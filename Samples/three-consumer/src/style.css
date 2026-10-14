@@ -6,3 +6,5 @@ h1 { margin: 0; font-size: 1rem; font-weight: 600; }
 p { margin: 0.35rem 0; color: #bdc5d1; font-size: 0.8rem; }
 label { display: inline-block; margin: 0.75rem 0.4rem 0.4rem 0; color: #bdc5d1; font-size: 0.8rem; }
 select { border: 1px solid #596273; border-radius: 0.35rem; padding: 0.35rem 0.5rem; color: #fff; background: #292f39; font: inherit; pointer-events: auto; }
+button { display: block; margin-top: 0.5rem; border: 1px solid #596273; border-radius: 0.35rem; padding: 0.4rem 0.55rem; color: #fff; background: #292f39; font: inherit; font-size: 0.8rem; pointer-events: auto; cursor: pointer; }
+button[hidden] { display: none; }

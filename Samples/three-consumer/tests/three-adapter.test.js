@@ -2,15 +2,116 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { Group, Mesh } from 'three';
-import { compileShapeDefinition, adapterDescriptor } from '@scenereplay/three-adapter';
+import { applyShapePatch, compileShapeDefinition, adapterDescriptor } from '@scenereplay/three-adapter';
 
 const readJson = async relativePath => JSON.parse(await readFile(new URL(relativePath, import.meta.url), 'utf8'));
 
 test('descriptor advertises the supported adapter contract', () => {
   assert.deepEqual(adapterDescriptor.features, [
-    'stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata',
+    'stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'patch-application',
   ]);
   assert.equal(adapterDescriptor.engineId, 'three');
+});
+
+test('semantic patches update, add, move, and remove nodes while preserving stable object identities', async () => {
+  const definition = await readJson('../scene.json');
+  const metadata = await readJson('../game-metadata.json');
+  const root = compileShapeDefinition(definition, { gameMetadata: metadata });
+  const objectFor = id => {
+    let match;
+    root.traverse(object => {
+      if (object.userData.sceneReplay?.id === id) match = object;
+    });
+    return match;
+  };
+  const arm = objectFor('sample.arm');
+  const head = objectFor('sample.head');
+  const frustum = objectFor('sample.frustum');
+  const armGeometry = arm.geometry;
+  const armMaterial = arm.material;
+  const frustumGeometry = frustum.geometry;
+  const accessory = {
+    id: 'sample.accessory',
+    name: 'Accessory Group',
+    type: 'core/group',
+    transform: {
+      position: { x: 0, y: 0, z: 0 },
+      eulerAngles: { x: 0, y: 0, z: 0 },
+      scale: { x: 1, y: 1, z: 1 },
+    },
+    children: [],
+  };
+  applyShapePatch(root, {
+    schema: 'scenereplay.patch/1.0',
+    operations: [
+      { kind: 'updateNode', nodeId: 'sample.arm', update: { transform: { position: { x: 0.9, y: 0.2, z: 0 }, eulerAngles: { x: 0, y: 0, z: -65 }, scale: { x: 0.22, y: 0.42, z: 0.22 } } } },
+      { kind: 'addNode', parentId: 'sample.body', siblingIndex: -1, node: accessory },
+      { kind: 'moveNode', nodeId: 'sample.head', parentId: 'sample.accessory', siblingIndex: -1 },
+      { kind: 'addNode', parentId: 'sample.accessory', siblingIndex: -1, node: {
+        id: 'sample.badge', name: 'Badge', type: 'lowpoly/cube',
+        transform: { position: { x: 0, y: 0, z: 0 }, eulerAngles: { x: 0, y: 0, z: 0 }, scale: { x: 0.2, y: 0.2, z: 0.2 } },
+      } },
+    ],
+  });
+
+  assert.equal(objectFor('sample.arm'), arm);
+  assert.equal(objectFor('sample.frustum'), frustum);
+  assert.equal(frustum.geometry, frustumGeometry);
+  assert.equal(arm.geometry, armGeometry);
+  assert.equal(arm.material, armMaterial);
+  assert.equal(objectFor('sample.head'), head);
+  assert.equal(arm.position.x, 0.9);
+  assert.equal(head.parent.userData.sceneReplay.id, 'sample.accessory');
+  assert.ok(objectFor('sample.badge') instanceof Mesh);
+  assert.equal(root.userData.sceneReplay.gameMetadata.id, metadata.id);
+
+  applyShapePatch(root, {
+    schema: 'scenereplay.patch/1.0',
+    operations: [{
+      kind: 'updateNode',
+      nodeId: 'sample.frustum',
+      parentId: '',
+      siblingIndex: -1,
+      update: { parameters: { topWidth: 0.7, topDepth: 0.65, bottomWidth: 1, bottomDepth: 1 } },
+    }],
+  });
+  assert.equal(objectFor('sample.frustum'), frustum);
+  assert.notEqual(frustum.geometry, frustumGeometry);
+
+  applyShapePatch(root, {
+    schema: 'scenereplay.patch/1.0',
+    operations: [
+      { kind: 'removeNode', nodeId: 'sample.badge' },
+      { kind: 'moveNode', nodeId: 'sample.head', parentId: 'sample.body', siblingIndex: -1 },
+      { kind: 'removeNode', nodeId: 'sample.accessory' },
+    ],
+  });
+  assert.equal(objectFor('sample.head'), head);
+  assert.equal(objectFor('sample.arm'), arm);
+  assert.equal(head.parent.userData.sceneReplay.id, 'sample.body');
+  assert.equal(objectFor('sample.badge'), undefined);
+});
+
+test('invalid semantic patches leave the compiled hierarchy unchanged', async () => {
+  const root = compileShapeDefinition(await readJson('../scene.json'));
+  let arm;
+  root.traverse(object => {
+    if (object.userData.sceneReplay?.id === 'sample.arm') arm = object;
+  });
+  const rootMetadata = root.userData.sceneReplay;
+  assert.throws(() => applyShapePatch(root, {
+    schema: 'scenereplay.patch/1.0',
+    operations: [
+      { kind: 'updateNode', nodeId: 'sample.arm', update: { transform: { position: { x: 2, y: 0, z: 0 }, eulerAngles: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 } } } },
+      { kind: 'moveNode', nodeId: 'sample.body', parentId: 'sample.head', siblingIndex: -1 },
+    ],
+  }), /would create a cycle/);
+  assert.throws(() => applyShapePatch(root, {
+    schema: 'scenereplay.patch/1.0',
+    operations: [{ kind: 'updateNode', nodeId: 'sample.arm', update: { type: 'lowpoly/extruded-profile' } }],
+  }), /expected at least 3 points/);
+  assert.equal(arm.position.x, 0.55);
+  assert.equal(root.userData.sceneReplay, rootMetadata);
 });
 
 test('character consumer example compiles its hierarchy and game metadata', async () => {

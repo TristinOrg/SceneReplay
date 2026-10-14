@@ -5,7 +5,7 @@ export declare const adapterDescriptor: Readonly<{
   adapterId: 'scenereplay/three';
   engineId: 'three';
   version: '0.1.0';
-  features: readonly ['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata'];
+  features: readonly ['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata', 'patch-application'];
   unsupportedFeaturePolicy: 'reject';
 }>;
 
@@ -87,6 +87,20 @@ export interface ShapeGameMetadata {
   tags: string[];
 }
 
+export interface ShapePatch {
+  schema: 'scenereplay.patch/1.0';
+  operations: ShapePatchOperation[];
+}
+
+export interface ShapePatchOperation {
+  kind: 'addNode' | 'removeNode' | 'moveNode' | 'updateNode';
+  nodeId: string;
+  parentId: string;
+  siblingIndex: number;
+  node?: ShapeNode;
+  update?: Partial<Omit<ShapeNode, 'id' | 'children'>>;
+}
+
 /** Compiles a supported SceneReplay hierarchy into a native Three.js Group. */
 export declare function compileShapeDefinition(
   definition: ShapeDefinition,
@@ -95,3 +109,10 @@ export declare function compileShapeDefinition(
 
 /** Validates and preserves gameplay metadata on a compiled Three.js hierarchy. */
 export declare function applyGameMetadata(compiledRoot: Group, metadata: ShapeGameMetadata): Group;
+
+/** Applies an atomic semantic patch and reuses Three.js objects whose stable IDs and object types remain compatible. */
+export declare function applyShapePatch(
+  compiledRoot: Group,
+  patch: ShapePatch,
+  options?: ThreeAdapterOptions,
+): Group;
