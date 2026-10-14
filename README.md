@@ -63,6 +63,13 @@ The independent JavaScript adapter is in `Adapters/three` and is consumed by the
 
 The GDScript adapter is in `Adapters/godot` and has a standalone project in `Samples/godot-consumer`. It compiles stable IDs, hierarchy, local transforms, direct palette/color overrides, game-metadata bindings, and all eleven Low Poly types into Godot `Node3D` and `MeshInstance3D` objects. It applies atomic semantic patches and preserves compatible native node identities. An opt-in compiles declared colliders into Godot physics nodes. The sample switches between a collider-enabled character and a five-shape profile gallery. Semantic rigs, patch rollback, and native LOD switching remain adapter gaps.
 
+| Adapter | Current engine support | Native semantic output |
+|---|---|---|
+| Unity | All eleven Low Poly types, stable-ID hierarchy, reversible edits, semantic rigs | Colliders, LOD groups, rig bindings, Prefab workflow |
+| Three.js | All eleven Low Poly types, stable-ID hierarchy, atomic add/remove/move/update patches | Scene metadata; rendering and physics stay with the host application |
+| Godot | All eleven Low Poly types, stable-ID hierarchy, atomic add/remove/move/update patches | Optional box, sphere, capsule, and convex mesh colliders; other game metadata stays descriptive |
+| Unreal Engine | Planned | No adapter implementation yet |
+
 Schema and Core have no `UnityEngine`, render-pipeline, concrete-style, or AI-provider dependency.
 
 Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their semantic features and unsupported-feature policy. Contract v1 requires stable node IDs, hierarchy, and local transforms. `ShapeAdapterConformanceValidator` checks those promises against a compiled hierarchy, including identity, parent relationships, transform values, and writable transform restoration. Unity passes the shared C# conformance validator; the JavaScript Three.js and GDScript Godot adapters have engine-native headless test suites for their published behavior.
@@ -318,7 +325,7 @@ The responsibility boundary is:
 | Scene execution, rendering, camera, and application interaction | Host engine and application (for example, Three.js) |
 | Initial modeling or image-to-3D authoring | External authoring tools or AI providers |
 
-Three.js provides a scene and rendering runtime. SceneReplay addresses a different layer: a portable, semantically editable definition that engine adapters map into host-native hierarchies while retaining SceneReplay IDs and metadata. Unity and Three.js integrations are implemented; Godot and Unreal adapters remain planned. Each adapter must preserve the shared semantic contract rather than redefine it. SceneReplay itself does not render scenes, model arbitrary geometry, or reconstruct assets from reference images.
+Three.js provides a scene and rendering runtime. SceneReplay addresses a different layer: a portable, semantically editable definition that engine adapters map into host-native hierarchies while retaining SceneReplay IDs and metadata. Unity, Three.js, and Godot integrations are implemented; Unreal remains planned. Each adapter must preserve the shared semantic contract rather than redefine it. SceneReplay itself does not render scenes, model arbitrary geometry, or reconstruct assets from reference images.
 
 Game Semantic Metadata is also portable. A `scenereplay.game-metadata/1.0` document binds sockets, grips, interaction and IK anchors, damage zones, collider rules, LOD membership, and gameplay tags to stable node IDs. Core validates those bindings; the Unity adapter compiles them into child transforms, native colliders, `LODGroup`, and a cached runtime manifest. This keeps gameplay intent readable and editable without placing Unity types in Core.
 
