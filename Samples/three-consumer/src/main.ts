@@ -23,6 +23,7 @@ import weaponDefinition from '../examples/weapon.json';
 import weaponMetadata from '../examples/weapon.game-metadata.json';
 import buildingDefinition from '../examples/building.json';
 import buildingMetadata from '../examples/building.game-metadata.json';
+import profilesDefinition from '../examples/profiles.json';
 import './style.css';
 
 const scene = new Scene();
@@ -36,6 +37,7 @@ const examples = {
   character: { definition: shapeDefinition, metadata: gameMetadata },
   weapon: { definition: weaponDefinition, metadata: weaponMetadata },
   building: { definition: buildingDefinition, metadata: buildingMetadata },
+  profiles: { definition: profilesDefinition, metadata: undefined },
 };
 
 const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -66,7 +68,7 @@ function showExample(exampleId: keyof typeof examples): void {
   }
   const example = examples[exampleId];
   currentModel = compileShapeDefinition(example.definition as ShapeDefinition, {
-    gameMetadata: example.metadata as ShapeGameMetadata,
+    gameMetadata: example.metadata as ShapeGameMetadata | undefined,
   });
   scene.add(currentModel);
   document.querySelector('#status')!.textContent =

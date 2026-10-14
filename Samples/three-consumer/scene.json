@@ -73,6 +73,20 @@
               "hasColorOverride": true,
               "color": { "r": 0.82, "g": 0.64, "b": 0.45, "a": 1 }
             }
+          },
+          {
+            "id": "sample.arm",
+            "name": "Arm",
+            "type": "lowpoly/cylinder",
+            "transform": {
+              "position": { "x": 0.55, "y": 0.2, "z": 0 },
+              "eulerAngles": { "x": 0, "y": 0, "z": -65 },
+              "scale": { "x": 0.22, "y": 0.42, "z": 0.22 }
+            },
+            "appearance": {
+              "hasColorOverride": true,
+              "color": { "r": 0.18, "g": 0.42, "b": 0.72, "a": 1 }
+            }
           }
         ]
       }

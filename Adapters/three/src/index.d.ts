@@ -33,7 +33,20 @@ export interface ShapeNode {
     color?: { r: number; g: number; b: number; a: number };
   };
   parameters?: Record<string, number>;
+  /** Closed 2D contour used by extrude, loft, lathe, and sweep geometry. */
+  profile?: Vector2[];
+  /** Ordered 3D centerline used by profile sweeps. */
+  path?: Vector3[];
+  /** Ordered cross-section transforms used by profile lofts. */
+  profileSections?: Array<{ z: number; scale: Vector2; offset: Vector2 }>;
+  /** Ordered 2D contours used by profile cages. */
+  profileCageSections?: Array<{ z: number; profile: Vector2[] }>;
   children?: ShapeNode[];
+}
+
+export interface Vector2 {
+  x: number;
+  y: number;
 }
 
 export interface Vector3 {

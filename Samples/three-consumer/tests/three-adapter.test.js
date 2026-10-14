@@ -13,7 +13,7 @@ test('descriptor advertises the supported adapter contract', () => {
   assert.equal(adapterDescriptor.engineId, 'three');
 });
 
-test('consumer example compiles all six supported shapes and game metadata', async () => {
+test('character consumer example compiles its hierarchy and game metadata', async () => {
   const definition = await readJson('../scene.json');
   const gameMetadata = await readJson('../game-metadata.json');
   const root = compileShapeDefinition(definition, { gameMetadata });
@@ -48,6 +48,62 @@ test('weapon and building examples compile with their semantic metadata', async 
     assert.equal(root.userData.sceneReplay.gameMetadata.id, `${example}.gameplay`);
     assert.ok(root.userData.sceneReplay.gameplayTags.length > 0);
   }
+});
+
+test('profile geometry gallery compiles all five advanced geometry types', async () => {
+  const definition = await readJson('../examples/profiles.json');
+  const root = compileShapeDefinition(definition);
+  const expectedTypes = [
+    'lowpoly/extruded-profile',
+    'lowpoly/profile-loft',
+    'lowpoly/profile-cage',
+    'lowpoly/lathe-profile',
+    'lowpoly/profile-sweep',
+  ];
+  const meshes = [];
+  root.traverse(object => {
+    if (object instanceof Mesh) meshes.push(object);
+  });
+
+  assert.equal(meshes.length, expectedTypes.length);
+  assert.deepEqual(meshes.map(mesh => mesh.userData.sceneReplay.type).sort(), [...expectedTypes].sort());
+  for (const mesh of meshes) {
+    assert.ok(mesh.geometry.getAttribute('position').count > 0);
+    mesh.geometry.computeBoundingBox();
+    assert.ok(mesh.geometry.boundingBox && !mesh.geometry.boundingBox.isEmpty());
+  }
+});
+
+test('profile validation rejects inconsistent cage winding and non-finite sweep paths', async () => {
+  const definition = await readJson('../examples/profiles.json');
+  const cage = definition.root.children[2];
+  cage.profileCageSections[1].profile.reverse();
+  assert.throws(() => compileShapeDefinition(definition), /same point winding/);
+
+  const sweep = await readJson('../examples/profiles.json');
+  sweep.root.children[4].path[1].y = Number.NaN;
+  assert.throws(() => compileShapeDefinition(sweep), /expected finite x, y, and z values/);
+});
+
+test('consumer examples exercise every supported Low Poly type', async () => {
+  const expectedTypes = new Set([
+    'lowpoly/cube', 'lowpoly/sphere', 'lowpoly/cylinder', 'lowpoly/capsule',
+    'lowpoly/wedge', 'lowpoly/frustum', 'lowpoly/extruded-profile',
+    'lowpoly/profile-loft', 'lowpoly/profile-cage', 'lowpoly/lathe-profile',
+    'lowpoly/profile-sweep',
+  ]);
+  const actualTypes = new Set();
+  for (const file of ['../scene.json', '../examples/weapon.json', '../examples/building.json', '../examples/profiles.json']) {
+    const definition = await readJson(file);
+    const visit = node => {
+      if (node.type.startsWith('lowpoly/')) actualTypes.add(node.type);
+      node.children?.forEach(visit);
+    };
+    visit(definition.root);
+    compileShapeDefinition(definition);
+  }
+
+  assert.deepEqual([...actualTypes].sort(), [...expectedTypes].sort());
 });
 
 test('unsupported geometry and duplicate node IDs fail with a source path', async () => {

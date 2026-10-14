@@ -58,7 +58,7 @@ Dependency direction is one-way:
 Schema <- Core <- Unity Adapter <- Low Poly
 ```
 
-The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It currently supports stable node IDs, hierarchy, local transforms, game-metadata preservation, and six Low Poly geometry types. The sample includes a character-like assembly plus standalone weapon and building definitions. It is a first adapter increment; advanced profile geometry, patch-driven native updates, and native collider/LOD behavior are not implemented there yet.
+The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It supports stable node IDs, hierarchy, local transforms, game-metadata preservation, and all eleven Low Poly geometry types. The sample includes character, weapon, building, and profile geometry galleries. Semantic rigs, mirror transforms, patch-driven native updates, and engine-native collider/LOD behavior remain adapter gaps.
 
 Schema and Core have no `UnityEngine`, render-pipeline, concrete-style, or AI-provider dependency.
 
@@ -314,7 +314,7 @@ The responsibility boundary is:
 | Scene execution, rendering, camera, and application interaction | Host engine and application (for example, Three.js) |
 | Initial modeling or image-to-3D authoring | External authoring tools or AI providers |
 
-Three.js provides a scene and rendering runtime. SceneReplay addresses a different layer: a portable, semantically editable definition that engine adapters map into host-native hierarchies while retaining SceneReplay IDs and metadata. Unity is the currently implemented engine integration; Three.js, Godot, and Unreal adapters remain planned. Each adapter must preserve the shared semantic contract rather than redefine it. SceneReplay itself does not render scenes, model arbitrary geometry, or reconstruct assets from reference images.
+Three.js provides a scene and rendering runtime. SceneReplay addresses a different layer: a portable, semantically editable definition that engine adapters map into host-native hierarchies while retaining SceneReplay IDs and metadata. Unity and Three.js integrations are implemented; Godot and Unreal adapters remain planned. Each adapter must preserve the shared semantic contract rather than redefine it. SceneReplay itself does not render scenes, model arbitrary geometry, or reconstruct assets from reference images.
 
 Game Semantic Metadata is also portable. A `scenereplay.game-metadata/1.0` document binds sockets, grips, interaction and IK anchors, damage zones, collider rules, LOD membership, and gameplay tags to stable node IDs. Core validates those bindings; the Unity adapter compiles them into child transforms, native colliders, `LODGroup`, and a cached runtime manifest. This keeps gameplay intent readable and editable without placing Unity types in Core.
 
