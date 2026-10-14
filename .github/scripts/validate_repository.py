@@ -89,6 +89,23 @@ def validate_engine_boundaries(errors: list[str]) -> None:
                 errors.append(f"Engine dependency leaked into {path.relative_to(ROOT)}")
 
 
+def validate_godot_consumer(errors: list[str]) -> None:
+    mirrors = (
+        ("Adapters/godot/addons/scenereplay/scene_replay_adapter.gd", "Samples/godot-consumer/addons/scenereplay/scene_replay_adapter.gd"),
+        ("Samples/three-consumer/scene.json", "Samples/godot-consumer/examples/character.json"),
+        ("Samples/three-consumer/game-metadata.json", "Samples/godot-consumer/examples/character.game-metadata.json"),
+        ("Samples/three-consumer/examples/weapon.json", "Samples/godot-consumer/examples/weapon.json"),
+        ("Samples/three-consumer/examples/weapon.game-metadata.json", "Samples/godot-consumer/examples/weapon.game-metadata.json"),
+    )
+    for source_name, mirror_name in mirrors:
+        source = ROOT / source_name
+        mirror = ROOT / mirror_name
+        if not source.is_file() or not mirror.is_file():
+            errors.append(f"Missing Godot consumer source or mirror: {source_name} -> {mirror_name}")
+        elif source.read_bytes() != mirror.read_bytes():
+            errors.append(f"Godot consumer mirror is out of sync: {mirror_name}")
+
+
 def main() -> int:
     errors: list[str] = []
     for filename in REQUIRED_ROOT_FILES:
@@ -98,6 +115,7 @@ def main() -> int:
     validate_packages(errors)
     validate_json_files(errors)
     validate_engine_boundaries(errors)
+    validate_godot_consumer(errors)
 
     if errors:
         for error in errors:

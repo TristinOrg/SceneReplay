@@ -1,0 +1,51 @@
+{
+  "schema": "scenereplay.shape/1.0",
+  "name": "Semantic Weapon Prop",
+  "style": "sample/steel",
+  "root": {
+    "id": "weapon.root",
+    "name": "Weapon",
+    "type": "core/group",
+    "transform": {
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+      "scale": { "x": 1, "y": 1, "z": 1 }
+    },
+    "children": [
+      {
+        "id": "weapon.handle",
+        "name": "Handle",
+        "type": "lowpoly/capsule",
+        "transform": {
+          "position": { "x": 0, "y": 0.35, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.3, "y": 0.9, "z": 0.3 }
+        },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.24, "g": 0.13, "b": 0.08, "a": 1 } }
+      },
+      {
+        "id": "weapon.guard",
+        "name": "Guard",
+        "type": "lowpoly/cube",
+        "transform": {
+          "position": { "x": 0, "y": 0.9, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.9, "y": 0.12, "z": 0.28 }
+        },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.62, "g": 0.64, "b": 0.68, "a": 1 } }
+      },
+      {
+        "id": "weapon.blade",
+        "name": "Tapered Blade",
+        "type": "lowpoly/frustum",
+        "transform": {
+          "position": { "x": 0, "y": 1.75, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.36, "y": 1.65, "z": 0.12 }
+        },
+        "parameters": { "topWidth": 0.15, "topDepth": 0.45, "bottomWidth": 1, "bottomDepth": 1 },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.62, "g": 0.7, "b": 0.78, "a": 1 } }
+      }
+    ]
+  }
+}

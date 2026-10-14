@@ -42,3 +42,31 @@ jobs:
       - name: Build Three.js consumer example
         working-directory: Samples/three-consumer
         run: npm run build
+
+  godot-adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot 4.7.2
+        shell: bash
+        run: |
+          asset="Godot_v4.7.2-stable_linux.x86_64.zip"
+          archive="$RUNNER_TEMP/$asset"
+          curl --fail --location --retry 3 \
+            "https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/$asset" \
+            --output "$archive"
+          printf '%s  %s\n' \
+            'cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4' "$archive" \
+            | sha256sum --check
+          mkdir "$RUNNER_TEMP/godot"
+          unzip -q "$archive" -d "$RUNNER_TEMP/godot"
+          chmod +x "$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64"
+          echo "$RUNNER_TEMP/godot" >> "$GITHUB_PATH"
+
+      - name: Import and validate the Godot consumer project
+        run: godot --headless --path Samples/godot-consumer --editor --quit
+
+      - name: Test the Godot adapter
+        run: godot --headless --path Samples/godot-consumer --script res://tests/run_tests.gd

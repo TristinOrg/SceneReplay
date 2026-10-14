@@ -139,11 +139,11 @@ Do not place complete animation formats or Unity Animator ownership in SceneRepl
 
 ### M7 — Engine adapters and export
 
-Status: Portable export scope done; Unity is the first engine adapter. Cross-engine availability is a product goal. Adapter descriptor and hierarchy/transform conformance contract v1 are implemented in Core and Unity. Game-metadata capability and stable-node reference checks are part of the shared conformance validator, and Core verifies reversible semantic edits across authored-value and structural operations. Unity's native Prefab workflow now persists complete source metadata and supports compiling reversible semantic edits; EditMode coverage saves and reloads edited and restored Prefabs. Unity Prefab compilation and initial adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
+Status: Portable export scope done; Unity is the first engine adapter, followed by tested Three.js and Godot integrations. Cross-engine availability is a product goal. Adapter descriptor and hierarchy/transform conformance contract v1 are implemented in Core and Unity. Game-metadata capability and stable-node reference checks are part of the shared conformance validator, and Core verifies reversible semantic edits across authored-value and structural operations. Unity's native Prefab workflow now persists complete source metadata and supports compiling reversible semantic edits; EditMode coverage saves and reloads edited and restored Prefabs. Unity Prefab compilation and initial adapter conformance are implemented in `eb652b2` and `d431b7b`; self-contained GLB export in `94cd8b9`; the licensed external FBX/USD tool boundary in `c3863b3`; GLB validation and auditable converter profiles in `cc902cc` and `d9a7ae4`.
 
 Develop in this order:
 
-1. Three.js adapter hierarchy, transforms, all eleven current Low Poly geometry types, game-metadata preservation, and atomic patch application are implemented with a standalone consumer; next add semantic rig support, then add Godot and Unreal adapters against real consuming projects;
+1. Three.js adapter hierarchy, transforms, all eleven current Low Poly geometry types, game-metadata preservation, and atomic patch application are implemented with a standalone consumer; the Godot adapter now compiles six Low Poly types and game metadata in a tested standalone project; next expand Godot geometry and patch support, then add Unreal against a real consuming project;
 2. publish adapter setup guides and conformance fixtures for additional engine teams;
 3. validate each engine's metadata and reversible edits through its native asset workflow;
 4. export geometry-preserving GLB with stable semantic node metadata;
@@ -175,7 +175,7 @@ MCP must remain a thin orchestration surface, not a second implementation of Sce
 
 ## Immediate continuation
 
-1. build adapters for Three.js, Godot, and Unreal against consuming projects;
+1. expand Godot geometry and patch coverage, then build the Unreal adapter against a consuming project;
 2. validate metadata and reversible edits through each engine's native asset workflow;
 3. run `validate-glb` with the Khronos validator and real consuming pipelines; local structural and external-command validation landed in `cc902cc`;
 4. create a pinned converter profile from `Docs/converter-profile.example.json` before publishing FBX/USD artifacts; profile enforcement and reporting landed in `d9a7ae4`.

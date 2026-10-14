@@ -27,6 +27,7 @@
 .gradle/
 node_modules/
 dist/
+.godot/
 __pycache__/
 *.py[cod]
 

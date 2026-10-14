@@ -1,0 +1,47 @@
+{
+  "schema": "scenereplay.game-metadata/1.0",
+  "id": "weapon.gameplay",
+  "anchors": [
+    {
+      "id": "weapon.grip",
+      "role": "game/hand-grip",
+      "nodeId": "weapon.handle",
+      "transform": {
+        "position": { "x": 0, "y": 0.2, "z": 0 },
+        "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 }
+      },
+      "tags": ["right-hand", "primary-grip"]
+    },
+    {
+      "id": "weapon.attach",
+      "role": "game/weapon-socket",
+      "nodeId": "weapon.root",
+      "transform": {
+        "position": { "x": 0, "y": 0.95, "z": 0 },
+        "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+        "scale": { "x": 1, "y": 1, "z": 1 }
+      },
+      "tags": ["attachment"]
+    }
+  ],
+  "damageZones": [
+    { "id": "weapon.edge", "nodeId": "weapon.blade", "multiplier": 1.25, "tags": ["sharp", "damage"] }
+  ],
+  "colliders": [
+    {
+      "id": "weapon.blade-collider",
+      "nodeId": "weapon.blade",
+      "kind": "box",
+      "isTrigger": true,
+      "center": { "x": 0, "y": 0, "z": 0 },
+      "size": { "x": 1, "y": 1, "z": 1 },
+      "radius": 0.5,
+      "height": 1
+    }
+  ],
+  "lods": [
+    { "level": 0, "screenRelativeHeight": 0.5, "nodeIds": ["weapon.handle", "weapon.guard", "weapon.blade"] }
+  ],
+  "tags": ["weapon", "melee", "one-handed"]
+}

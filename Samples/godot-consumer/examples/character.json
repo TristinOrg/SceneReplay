@@ -1,0 +1,95 @@
+{
+  "schema": "scenereplay.shape/1.0",
+  "name": "SceneReplay Sample",
+  "style": "sample/neutral",
+  "root": {
+    "id": "sample.root",
+    "name": "Sample Root",
+    "type": "core/group",
+    "transform": {
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+      "scale": { "x": 1, "y": 1, "z": 1 }
+    },
+    "children": [
+      {
+        "id": "sample.wedge",
+        "name": "Wedge",
+        "type": "lowpoly/wedge",
+        "transform": {
+          "position": { "x": 1.2, "y": 0.4, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 25, "z": 0 },
+          "scale": { "x": 0.8, "y": 0.8, "z": 0.8 }
+        },
+        "appearance": {
+          "hasColorOverride": true,
+          "color": { "r": 0.78, "g": 0.48, "b": 0.18, "a": 1 }
+        }
+      },
+      {
+        "id": "sample.frustum",
+        "name": "Frustum",
+        "type": "lowpoly/frustum",
+        "transform": {
+          "position": { "x": -1.2, "y": 0.5, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.8, "y": 1, "z": 0.8 }
+        },
+        "parameters": {
+          "topWidth": 0.45,
+          "topDepth": 0.45,
+          "bottomWidth": 1,
+          "bottomDepth": 1
+        },
+        "appearance": {
+          "hasColorOverride": true,
+          "color": { "r": 0.46, "g": 0.68, "b": 0.34, "a": 1 }
+        }
+      },
+      {
+        "id": "sample.body",
+        "name": "Body",
+        "type": "lowpoly/cube",
+        "transform": {
+          "position": { "x": 0, "y": 0.75, "z": 0 },
+          "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+          "scale": { "x": 0.8, "y": 1.5, "z": 0.5 }
+        },
+        "appearance": {
+          "hasColorOverride": true,
+          "color": { "r": 0.18, "g": 0.42, "b": 0.72, "a": 1 }
+        },
+        "children": [
+          {
+            "id": "sample.head",
+            "name": "Head",
+            "type": "lowpoly/sphere",
+            "transform": {
+              "position": { "x": 0, "y": 1.2, "z": 0 },
+              "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+              "scale": { "x": 0.75, "y": 0.75, "z": 0.75 }
+            },
+            "appearance": {
+              "hasColorOverride": true,
+              "color": { "r": 0.82, "g": 0.64, "b": 0.45, "a": 1 }
+            }
+          },
+          {
+            "id": "sample.arm",
+            "name": "Arm",
+            "type": "lowpoly/cylinder",
+            "transform": {
+              "position": { "x": 0.55, "y": 0.2, "z": 0 },
+              "eulerAngles": { "x": 0, "y": 0, "z": -65 },
+              "scale": { "x": 0.22, "y": 0.42, "z": 0.22 }
+            },
+            "appearance": {
+              "hasColorOverride": true,
+              "color": { "r": 0.18, "g": 0.42, "b": 0.72, "a": 1 }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -2,6 +2,7 @@
 
 [![Repository Validation](https://github.com/TristinOrg/SceneReplay/actions/workflows/repository-validation.yml/badge.svg)](https://github.com/TristinOrg/SceneReplay/actions/workflows/repository-validation.yml)
 [![Unity](https://img.shields.io/badge/Unity-2022.3%20LTS-000000.svg)](https://unity.com/releases/editor/whats-new/2022.3.62)
+[![Godot](https://img.shields.io/badge/Godot-4.x-478cbf.svg)](https://godotengine.org/download/)
 [![Release](https://img.shields.io/badge/release-v0.1.0-4c8bf5.svg)](https://github.com/TristinOrg/SceneReplay/releases/tag/v0.1.0)
 [![License](https://img.shields.io/badge/license-AGPL--3.0--or--later%20%2F%20Commercial-blue.svg)](LICENSE.md)
 
@@ -11,7 +12,7 @@ See [ROADMAP.md](ROADMAP.md) for architecture and continuation instructions, and
 
 SceneReplay sits above runtime engines such as Three.js, Unity, Godot, and Unreal. An engine owns scene execution and rendering; SceneReplay preserves an asset's semantic structure and identity as it is authored, edited, validated, and adapted between tools. For example, an application could keep the ID of a robot's left arm stable while applying a patch to that part, then map the definition into its engine's object hierarchy.
 
-The product goal is to make the same semantic asset usable across Unity, Unreal, Godot, Three.js, and other host tools through engine-specific adapters. The current implementation provides the Schema and Core packages, a Unity adapter, a standalone Three.js adapter, the official Low Poly geometry backend, and GLB export. Godot and Unreal adapters are planned; they are not represented as implemented. SceneReplay does not render scenes or reconstruct assets from reference images, and it does not replace modeling tools. AI and other authoring tools can create or edit SceneReplay definitions, but no AI provider is required by the format or Core.
+The product goal is to make the same semantic asset usable across Unity, Unreal, Godot, Three.js, and other host tools through engine-specific adapters. The current implementation provides the Schema and Core packages, Unity, Three.js, and Godot adapters, the official Low Poly geometry backend, and GLB export. Unreal remains planned. SceneReplay does not render scenes or reconstruct assets from reference images, and it does not replace modeling tools. AI and other authoring tools can create or edit SceneReplay definitions, but no AI provider is required by the format or Core.
 
 ## Release status
 
@@ -60,9 +61,11 @@ Schema <- Core <- Unity Adapter <- Low Poly
 
 The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It supports stable node IDs, hierarchy, local transforms, game-metadata preservation, atomic semantic patches, and all eleven Low Poly geometry types. The sample includes character, weapon, building, and profile geometry galleries plus a live stable-ID patch demonstration. Semantic rigs, mirror transforms, and engine-native collider/LOD behavior remain adapter gaps.
 
+The GDScript adapter is in `Adapters/godot` and has a standalone project in `Samples/godot-consumer`. It compiles stable IDs, hierarchy, local transforms, direct palette/color overrides, game-metadata bindings, and six Low Poly types into Godot `Node3D` and `MeshInstance3D` objects. Profile geometry, semantic rigs, patches, and native physics/LOD generation are not implemented in the Godot adapter yet.
+
 Schema and Core have no `UnityEngine`, render-pipeline, concrete-style, or AI-provider dependency.
 
-Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their semantic features and unsupported-feature policy. Contract v1 requires stable node IDs, hierarchy, and local transforms. `ShapeAdapterConformanceValidator` checks those promises against a compiled hierarchy, including identity, parent relationships, transform values, and writable transform restoration. Unity passes the shared C# conformance validator; the JavaScript Three.js adapter has its own Node.js conformance coverage for stable identity, hierarchy, transforms, metadata, and patch application.
+Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their semantic features and unsupported-feature policy. Contract v1 requires stable node IDs, hierarchy, and local transforms. `ShapeAdapterConformanceValidator` checks those promises against a compiled hierarchy, including identity, parent relationships, transform values, and writable transform restoration. Unity passes the shared C# conformance validator; the JavaScript Three.js and GDScript Godot adapters have engine-native headless test suites for their published behavior.
 
 ## Requirements
 
@@ -70,6 +73,7 @@ Engine adapters publish a `scenereplay.adapter/1.0` descriptor listing their sem
 - Newtonsoft JSON for the Unity adapter (`com.unity.nuget.newtonsoft-json` `3.2.1`)
 - Unity Test Framework only when running the included Editor tests
 - Node.js 20.19+ or 22.12+ to run the Three.js example and adapter tests
+- Godot 4.x to open the Godot adapter example and run its headless test suite
 
 The reference project currently uses Unity `2022.3.62f3`.
 
@@ -100,7 +104,7 @@ npm test
 npm run dev
 ```
 
-Open the local URL printed by Vite. The sample source and additional JSON definitions are in [Samples/three-consumer](Samples/three-consumer). Godot and Unreal integrations are not available yet; see [ROADMAP.md](ROADMAP.md) for the adapter sequence.
+Open the local URL printed by Vite. The sample source and additional JSON definitions are in [Samples/three-consumer](Samples/three-consumer). For Godot, open [Samples/godot-consumer/project.godot](Samples/godot-consumer/project.godot) in Godot 4, or run `godot --headless --path Samples/godot-consumer --script res://tests/run_tests.gd`. Unreal integration remains planned; see [ROADMAP.md](ROADMAP.md) for the adapter sequence.
 
 ## Quick start
 

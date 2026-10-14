@@ -1,0 +1,12 @@
+; Godot 4 standalone SceneReplay consumer example.
+config_version=5
+
+[application]
+
+config/name="SceneReplay Godot Consumer"
+run/main_scene="res://scenes/main.tscn"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
