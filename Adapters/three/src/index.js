@@ -15,7 +15,7 @@ export const adapterDescriptor = Object.freeze({
   adapterId: 'scenereplay/three',
   engineId: 'three',
   version: '0.1.0',
-  features: Object.freeze(['stable-node-ids', 'hierarchy', 'local-transforms']),
+  features: Object.freeze(['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata']),
   unsupportedFeaturePolicy: 'reject',
 });
 
@@ -30,6 +30,7 @@ const supportedGeometryTypes = new Set([
 /** Compiles a supported SceneReplay hierarchy into native Three.js objects. */
 export function compileShapeDefinition(definition, options = {}) {
   validateDefinition(definition);
+  if (options.gameMetadata) validateGameMetadata(definition, options.gameMetadata);
   const root = new Group();
   root.name = definition.name;
   root.userData.sceneReplay = {
@@ -39,7 +40,16 @@ export function compileShapeDefinition(definition, options = {}) {
     adapterId: adapterDescriptor.adapterId,
   };
   root.add(compileNode(definition.root, definition.style, options));
+  if (options.gameMetadata) attachGameMetadata(root, options.gameMetadata);
   return root;
+}
+
+/** Preserves validated game metadata on the matching objects in a compiled hierarchy. */
+export function applyGameMetadata(compiledRoot, metadata) {
+  const nodeIds = collectCompiledNodes(compiledRoot);
+  validateGameMetadataAgainstNodeIds(metadata, nodeIds);
+  attachGameMetadata(compiledRoot, metadata);
+  return compiledRoot;
 }
 
 function validateDefinition(definition) {
@@ -89,6 +99,160 @@ function validateVector(value, path) {
   if (!value || ![value.x, value.y, value.z].every(Number.isFinite)) {
     throw new Error(`${path}: expected finite x, y, and z values.`);
   }
+}
+
+function validateGameMetadata(definition, metadata) {
+  const nodeIds = new Set();
+  const collect = node => {
+    nodeIds.add(node.id);
+    node.children?.forEach(collect);
+  };
+  collect(definition.root);
+  validateGameMetadataAgainstNodeIds(metadata, nodeIds);
+}
+
+function validateGameMetadataAgainstNodeIds(metadata, nodeIds) {
+  if (!metadata || metadata.schema !== 'scenereplay.game-metadata/1.0') {
+    throw new Error(`Unsupported game-metadata schema '${metadata?.schema ?? ''}'.`);
+  }
+  if (typeof metadata.id !== 'string' || !metadata.id.trim()) {
+    throw new Error('Game metadata requires a stable ID.');
+  }
+  for (const key of ['anchors', 'damageZones', 'colliders', 'lods', 'tags']) {
+    if (!Array.isArray(metadata[key])) throw new Error(`Game metadata '${key}' must be an array.`);
+  }
+  validateTags(metadata.tags, '$.tags');
+  validateRecords(metadata.anchors, 'anchor', '$.anchors', nodeIds, record => {
+    if (typeof record.role !== 'string' || !record.role.trim()) throw new Error(`${record.path}.role: role is required.`);
+    validateTransform(record.transform, `${record.path}.transform`);
+    validateTags(record.tags, `${record.path}.tags`);
+  });
+  validateRecords(metadata.damageZones, 'damage zone', '$.damageZones', nodeIds, record => {
+    if (!Number.isFinite(record.multiplier) || record.multiplier < 0) {
+      throw new Error(`${record.path}.multiplier: expected a finite non-negative value.`);
+    }
+    validateTags(record.tags, `${record.path}.tags`);
+  });
+  validateRecords(metadata.colliders, 'collider', '$.colliders', nodeIds, record => {
+    if (!['box', 'sphere', 'capsule', 'mesh'].includes(record.kind)) {
+      throw new Error(`${record.path}.kind: unsupported collider kind '${record.kind}'.`);
+    }
+    validateVector(record.center, `${record.path}.center`);
+    validatePositiveVector(record.size, `${record.path}.size`);
+    if (!Number.isFinite(record.radius) || record.radius <= 0 ||
+        !Number.isFinite(record.height) || record.height <= 0) {
+      throw new Error(`${record.path}: radius and height must be finite positive values.`);
+    }
+    if (typeof record.isTrigger !== 'boolean') throw new Error(`${record.path}.isTrigger: expected a boolean.`);
+  });
+
+  let previousHeight = Number.POSITIVE_INFINITY;
+  metadata.lods.forEach((lod, index) => {
+    const path = `$.lods[${index}]`;
+    if (!lod || lod.level !== index) throw new Error(`${path}.level: LOD levels must be contiguous and ascending.`);
+    if (!Number.isFinite(lod.screenRelativeHeight) || lod.screenRelativeHeight < 0 ||
+        lod.screenRelativeHeight > 1 || lod.screenRelativeHeight >= previousHeight) {
+      throw new Error(`${path}.screenRelativeHeight: values must be normalized and strictly descending.`);
+    }
+    previousHeight = lod.screenRelativeHeight;
+    if (!Array.isArray(lod.nodeIds)) throw new Error(`${path}.nodeIds: expected an array.`);
+    validateTags(lod.nodeIds, `${path}.nodeIds`);
+    lod.nodeIds.forEach((nodeId, nodeIndex) => requireKnownNode(nodeId, `${path}.nodeIds[${nodeIndex}]`, nodeIds));
+  });
+}
+
+function validateRecords(records, label, path, nodeIds, validateRecord) {
+  const ids = new Set();
+  records.forEach((record, index) => {
+    const recordPath = `${path}[${index}]`;
+    if (!record || typeof record !== 'object') throw new Error(`${recordPath}: ${label} is required.`);
+    if (typeof record.id !== 'string' || !record.id.trim() || ids.has(record.id)) {
+      throw new Error(`${recordPath}.id: ${label} requires a unique stable ID.`);
+    }
+    ids.add(record.id);
+    requireKnownNode(record.nodeId, `${recordPath}.nodeId`, nodeIds);
+    validateRecord({ ...record, path: recordPath });
+  });
+}
+
+function validateTransform(transform, path) {
+  if (!transform) throw new Error(`${path}: transform is required.`);
+  validateVector(transform.position, `${path}.position`);
+  validateVector(transform.eulerAngles, `${path}.eulerAngles`);
+  validateVector(transform.scale, `${path}.scale`);
+}
+
+function validatePositiveVector(value, path) {
+  validateVector(value, path);
+  if ([value.x, value.y, value.z].some(component => component <= 0)) {
+    throw new Error(`${path}: expected positive x, y, and z values.`);
+  }
+}
+
+function validateTags(tags, path) {
+  if (!Array.isArray(tags)) throw new Error(`${path}: expected an array.`);
+  const unique = new Set();
+  tags.forEach((tag, index) => {
+    if (typeof tag !== 'string' || !tag.trim() || unique.has(tag)) {
+      throw new Error(`${path}[${index}]: tags must be non-empty and unique.`);
+    }
+    unique.add(tag);
+  });
+}
+
+function requireKnownNode(nodeId, path, nodeIds) {
+  if (typeof nodeId !== 'string' || !nodeIds.has(nodeId)) {
+    throw new Error(`${path}: metadata references unknown node '${nodeId ?? ''}'.`);
+  }
+}
+
+function collectCompiledNodes(compiledRoot) {
+  if (!compiledRoot?.userData?.sceneReplay || compiledRoot.userData.sceneReplay.adapterId !== adapterDescriptor.adapterId) {
+    throw new Error('Expected a root compiled by the SceneReplay Three.js adapter.');
+  }
+  const nodes = new Map();
+  compiledRoot.traverse(object => {
+    const id = object.userData?.sceneReplay?.id;
+    if (typeof id === 'string' && id) nodes.set(id, object);
+  });
+  return nodes;
+}
+
+function attachGameMetadata(compiledRoot, metadata) {
+  if (compiledRoot.userData.sceneReplay.gameMetadata) {
+    throw new Error('Game metadata has already been applied to this hierarchy.');
+  }
+  const nodes = collectCompiledNodes(compiledRoot);
+  const snapshot = JSON.parse(JSON.stringify(metadata));
+  const sceneReplayRoot = compiledRoot.userData.sceneReplay;
+  sceneReplayRoot.gameMetadata = snapshot;
+  sceneReplayRoot.gameplayTags = [...metadata.tags];
+
+  metadata.anchors.forEach(anchor => {
+    const object = new Group();
+    object.name = `Anchor_${anchor.id}`;
+    object.position.set(anchor.transform.position.x, anchor.transform.position.y, anchor.transform.position.z);
+    object.rotation.copy(new Euler(
+      degreesToRadians(anchor.transform.eulerAngles.x),
+      degreesToRadians(anchor.transform.eulerAngles.y),
+      degreesToRadians(anchor.transform.eulerAngles.z),
+      'XYZ',
+    ));
+    object.scale.set(anchor.transform.scale.x, anchor.transform.scale.y, anchor.transform.scale.z);
+    object.userData.sceneReplay = { anchorId: anchor.id, role: anchor.role, tags: [...anchor.tags] };
+    nodes.get(anchor.nodeId).add(object);
+  });
+  metadata.damageZones.forEach(zone => {
+    const target = nodes.get(zone.nodeId);
+    target.userData.sceneReplay.damageZones ??= [];
+    target.userData.sceneReplay.damageZones.push({ ...zone, tags: [...zone.tags] });
+  });
+  metadata.colliders.forEach(rule => {
+    const target = nodes.get(rule.nodeId);
+    target.userData.sceneReplay.colliderRules ??= [];
+    target.userData.sceneReplay.colliderRules.push({ ...rule, center: { ...rule.center }, size: { ...rule.size } });
+  });
+  sceneReplayRoot.lods = metadata.lods.map(lod => ({ ...lod, nodeIds: [...lod.nodeIds] }));
 }
 
 function compileNode(node, style, options) {

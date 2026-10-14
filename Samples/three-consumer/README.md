@@ -1,6 +1,6 @@
 # Three.js consuming project
 
-This small Vite application demonstrates consuming a SceneReplay definition outside Unity. It loads [`scene.json`](./scene.json), compiles its semantic hierarchy through `@scenereplay/three-adapter`, and renders the result with Three.js.
+This small Vite application demonstrates consuming a SceneReplay definition outside Unity. It loads [`scene.json`](./scene.json) and [`game-metadata.json`](./game-metadata.json), compiles the semantic hierarchy and gameplay metadata through `@scenereplay/three-adapter`, and renders the result with Three.js.
 
 ## Run locally
 

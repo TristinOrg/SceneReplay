@@ -1,0 +1,42 @@
+{
+  "schema": "scenereplay.game-metadata/1.0",
+  "id": "sample.gameplay",
+  "anchors": [
+    {
+      "id": "sample.weapon-socket",
+      "role": "game/weapon-socket",
+      "nodeId": "sample.body",
+      "transform": {
+        "position": { "x": 0.5, "y": 0.3, "z": 0 },
+        "eulerAngles": { "x": 0, "y": 0, "z": 90 },
+        "scale": { "x": 1, "y": 1, "z": 1 }
+      },
+      "tags": ["weapon", "right-hand"]
+    }
+  ],
+  "damageZones": [
+    {
+      "id": "sample.body-zone",
+      "nodeId": "sample.body",
+      "multiplier": 1,
+      "tags": ["body"]
+    }
+  ],
+  "colliders": [
+    {
+      "id": "sample.body-collider",
+      "nodeId": "sample.body",
+      "kind": "box",
+      "isTrigger": false,
+      "center": { "x": 0, "y": 0, "z": 0 },
+      "size": { "x": 1, "y": 1, "z": 1 },
+      "radius": 0.5,
+      "height": 1
+    }
+  ],
+  "lods": [
+    { "level": 0, "screenRelativeHeight": 0.6, "nodeIds": ["sample.body", "sample.head"] },
+    { "level": 1, "screenRelativeHeight": 0.2, "nodeIds": ["sample.body"] }
+  ],
+  "tags": ["character", "sample"]
+}

@@ -5,7 +5,7 @@ export declare const adapterDescriptor: Readonly<{
   adapterId: 'scenereplay/three';
   engineId: 'three';
   version: '0.1.0';
-  features: readonly ['stable-node-ids', 'hierarchy', 'local-transforms'];
+  features: readonly ['stable-node-ids', 'hierarchy', 'local-transforms', 'game-metadata'];
   unsupportedFeaturePolicy: 'reject';
 }>;
 
@@ -44,6 +44,33 @@ export interface Vector3 {
 export interface ThreeAdapterOptions {
   /** Resolves an authored semantic palette role to a Three.js color. */
   resolveColorRole?: (role: string, style: string | undefined) => ColorRepresentation | undefined;
+  /** Validated gameplay semantics to preserve alongside the compiled hierarchy. */
+  gameMetadata?: ShapeGameMetadata;
+}
+
+export interface ShapeGameMetadata {
+  schema: 'scenereplay.game-metadata/1.0';
+  id: string;
+  anchors: Array<{
+    id: string;
+    role: string;
+    nodeId: string;
+    transform: { position: Vector3; eulerAngles: Vector3; scale: Vector3 };
+    tags: string[];
+  }>;
+  damageZones: Array<{ id: string; nodeId: string; multiplier: number; tags: string[] }>;
+  colliders: Array<{
+    id: string;
+    nodeId: string;
+    kind: 'box' | 'sphere' | 'capsule' | 'mesh';
+    isTrigger: boolean;
+    center: Vector3;
+    size: Vector3;
+    radius: number;
+    height: number;
+  }>;
+  lods: Array<{ level: number; screenRelativeHeight: number; nodeIds: string[] }>;
+  tags: string[];
 }
 
 /** Compiles a supported SceneReplay hierarchy into a native Three.js Group. */
@@ -51,3 +78,6 @@ export declare function compileShapeDefinition(
   definition: ShapeDefinition,
   options?: ThreeAdapterOptions,
 ): Group;
+
+/** Validates and preserves gameplay metadata on a compiled Three.js hierarchy. */
+export declare function applyGameMetadata(compiledRoot: Group, metadata: ShapeGameMetadata): Group;

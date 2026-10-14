@@ -9,8 +9,13 @@ import {
   Scene,
   WebGLRenderer,
 } from 'three';
-import { compileShapeDefinition, type ShapeDefinition } from '@scenereplay/three-adapter';
+import {
+  compileShapeDefinition,
+  type ShapeDefinition,
+  type ShapeGameMetadata,
+} from '@scenereplay/three-adapter';
 import shapeDefinition from '../scene.json';
+import gameMetadata from '../game-metadata.json';
 import './style.css';
 
 const scene = new Scene();
@@ -20,7 +25,9 @@ scene.add(new AmbientLight(0xffffff, 1.5));
 const keyLight = new DirectionalLight(0xffffff, 3);
 keyLight.position.set(3, 5, 4);
 scene.add(keyLight);
-scene.add(compileShapeDefinition(shapeDefinition as ShapeDefinition));
+scene.add(compileShapeDefinition(shapeDefinition as ShapeDefinition, {
+  gameMetadata: gameMetadata as ShapeGameMetadata,
+}));
 
 const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(3, 2.5, 4);
