@@ -1,0 +1,72 @@
+{
+  "schema": "scenereplay.shape/1.0",
+  "name": "Profile Geometry Gallery",
+  "style": "sample/neutral",
+  "root": {
+    "id": "profiles.root",
+    "name": "Profile Gallery",
+    "type": "core/group",
+    "transform": {
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "eulerAngles": { "x": 0, "y": 0, "z": 0 },
+      "scale": { "x": 1, "y": 1, "z": 1 }
+    },
+    "children": [
+      {
+        "id": "profiles.extruded",
+        "name": "Extruded Shield",
+        "type": "lowpoly/extruded-profile",
+        "transform": { "position": { "x": -4, "y": 0.8, "z": 0 }, "eulerAngles": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
+        "profile": [{ "x": -0.5, "y": -0.4 }, { "x": 0.5, "y": -0.4 }, { "x": 0.45, "y": 0.25 }, { "x": 0, "y": 0.55 }, { "x": -0.45, "y": 0.25 }],
+        "parameters": { "profileDepth": 0.35, "profileBevel": 0.025, "profileBevelSegments": 2 },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.8, "g": 0.35, "b": 0.2, "a": 1 } }
+      },
+      {
+        "id": "profiles.loft",
+        "name": "Profile Loft",
+        "type": "lowpoly/profile-loft",
+        "transform": { "position": { "x": -2, "y": 0.8, "z": 0 }, "eulerAngles": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
+        "profile": [{ "x": -0.5, "y": -0.4 }, { "x": 0.5, "y": -0.4 }, { "x": 0.5, "y": 0.4 }, { "x": -0.5, "y": 0.4 }],
+        "profileSections": [
+          { "z": -0.5, "scale": { "x": 0.8, "y": 0.8 }, "offset": { "x": 0, "y": 0 } },
+          { "z": 0.1, "scale": { "x": 1.1, "y": 0.9 }, "offset": { "x": 0, "y": 0.15 } },
+          { "z": 0.7, "scale": { "x": 0.55, "y": 0.55 }, "offset": { "x": 0, "y": 0.35 } }
+        ],
+        "parameters": { "loftSubdivisions": 1, "profileSmoothing": 1, "smoothNormals": 0 },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.25, "g": 0.65, "b": 0.85, "a": 1 } }
+      },
+      {
+        "id": "profiles.cage",
+        "name": "Profile Cage",
+        "type": "lowpoly/profile-cage",
+        "transform": { "position": { "x": 0, "y": 0.8, "z": 0 }, "eulerAngles": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
+        "profileCageSections": [
+          { "z": -0.55, "profile": [{ "x": -0.5, "y": -0.35 }, { "x": 0.5, "y": -0.35 }, { "x": 0.5, "y": 0.35 }, { "x": -0.5, "y": 0.35 }] },
+          { "z": 0, "profile": [{ "x": -0.35, "y": -0.5 }, { "x": 0.35, "y": -0.5 }, { "x": 0.35, "y": 0.5 }, { "x": -0.35, "y": 0.5 }] },
+          { "z": 0.55, "profile": [{ "x": -0.5, "y": -0.35 }, { "x": 0.5, "y": -0.35 }, { "x": 0.5, "y": 0.35 }, { "x": -0.5, "y": 0.35 }] }
+        ],
+        "parameters": { "cageSubdivisions": 1, "smoothNormals": 0 },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.35, "g": 0.75, "b": 0.4, "a": 1 } }
+      },
+      {
+        "id": "profiles.lathe",
+        "name": "Lathe Profile",
+        "type": "lowpoly/lathe-profile",
+        "transform": { "position": { "x": 2, "y": 0.1, "z": 0 }, "eulerAngles": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
+        "profile": [{ "x": 0.12, "y": 0 }, { "x": 0.42, "y": 0.15 }, { "x": 0.5, "y": 0.55 }, { "x": 0.28, "y": 0.9 }, { "x": 0.08, "y": 1.05 }],
+        "parameters": { "radialSegments": 10, "profileSmoothing": 1 },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.85, "g": 0.7, "b": 0.25, "a": 1 } }
+      },
+      {
+        "id": "profiles.sweep",
+        "name": "Profile Sweep",
+        "type": "lowpoly/profile-sweep",
+        "transform": { "position": { "x": 4, "y": 0.2, "z": 0 }, "eulerAngles": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
+        "profile": [{ "x": -0.2, "y": -0.2 }, { "x": 0.2, "y": -0.2 }, { "x": 0.2, "y": 0.2 }, { "x": -0.2, "y": 0.2 }],
+        "path": [{ "x": 0, "y": 0, "z": -0.55 }, { "x": 0.35, "y": 0, "z": 0 }, { "x": 0, "y": 0.35, "z": 0.55 }],
+        "parameters": { "profileSmoothing": 0, "pathSmoothing": 1 },
+        "appearance": { "hasColorOverride": true, "color": { "r": 0.65, "g": 0.35, "b": 0.8, "a": 1 } }
+      }
+    ]
+  }
+}

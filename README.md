@@ -61,7 +61,7 @@ Schema <- Core <- Unity Adapter <- Low Poly
 
 The independent JavaScript adapter is in `Adapters/three` and is consumed by the runnable project in `Samples/three-consumer`. It supports stable node IDs, hierarchy, local transforms, game-metadata preservation, atomic semantic patches, and all eleven Low Poly geometry types. The sample includes character, weapon, building, and profile geometry galleries plus a live stable-ID patch demonstration. Semantic rigs, mirror transforms, and engine-native collider/LOD behavior remain adapter gaps.
 
-The GDScript adapter is in `Adapters/godot` and has a standalone project in `Samples/godot-consumer`. It compiles stable IDs, hierarchy, local transforms, direct palette/color overrides, game-metadata bindings, and six Low Poly types into Godot `Node3D` and `MeshInstance3D` objects. Profile geometry, semantic rigs, patches, and native physics/LOD generation are not implemented in the Godot adapter yet.
+The GDScript adapter is in `Adapters/godot` and has a standalone project in `Samples/godot-consumer`. It compiles stable IDs, hierarchy, local transforms, direct palette/color overrides, game-metadata bindings, and all eleven Low Poly types into Godot `Node3D` and `MeshInstance3D` objects. The sample switches between a metadata-rich character and a five-shape profile gallery. Semantic rigs, patches, and native physics/LOD generation remain adapter gaps.
 
 Schema and Core have no `UnityEngine`, render-pipeline, concrete-style, or AI-provider dependency.
 

@@ -2,32 +2,57 @@ extends Node3D
 
 const Adapter = preload("res://addons/scenereplay/scene_replay_adapter.gd")
 
+var current_root: Node3D
+var camera: Camera3D
+
 
 func _ready() -> void:
-	var file := FileAccess.open("res://examples/character.json", FileAccess.READ)
-	var metadata_file := FileAccess.open("res://examples/character.game-metadata.json", FileAccess.READ)
-	if file == null or metadata_file == null:
-		push_error("SceneReplay example files could not be opened.")
+	_add_camera()
+	_add_lighting()
+	_load_example("character", true)
+	print("Press 1 for the character, or 2 for the profile geometry gallery.")
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if event.keycode == KEY_1:
+		_load_example("character", true)
+	elif event.keycode == KEY_2:
+		_load_example("profiles", false)
+
+
+func _load_example(example_name: String, with_metadata: bool) -> void:
+	var file := FileAccess.open("res://examples/%s.json" % example_name, FileAccess.READ)
+	if file == null:
+		push_error("SceneReplay example could not be opened: %s" % example_name)
 		return
 	var definition: Variant = JSON.parse_string(file.get_as_text())
-	var metadata: Variant = JSON.parse_string(metadata_file.get_as_text())
-	var result: Dictionary = Adapter.compile_shape_definition(definition, {
-		"gameMetadata": metadata,
-		"paletteRoles": {"metal.dark": Color("#39404b")},
-	})
+	var options := {"paletteRoles": {"metal.dark": Color("#39404b")}}
+	if with_metadata:
+		var metadata_file := FileAccess.open("res://examples/%s.game-metadata.json" % example_name, FileAccess.READ)
+		if metadata_file == null:
+			push_error("SceneReplay metadata could not be opened: %s" % example_name)
+			return
+		options.gameMetadata = JSON.parse_string(metadata_file.get_as_text())
+	var result: Dictionary = Adapter.compile_shape_definition(definition, options)
 	if not result.ok:
 		push_error(result.error)
 		return
-	add_child(result.root)
-	_add_camera()
-	_add_lighting()
-	print("SceneReplay Godot sample loaded %d semantic nodes." % _count_semantic_nodes(result.root))
+	if current_root != null:
+		current_root.queue_free()
+	current_root = result.root
+	add_child(current_root)
+	if camera != null:
+		camera.position = Vector3(3.2, 2.6, 5.5) if with_metadata else Vector3(0.0, 3.6, 10.5)
+		camera.look_at(Vector3(0.0, 0.8, 0.0))
+	print("SceneReplay Godot sample loaded %s with %d semantic nodes." % [example_name, _count_semantic_nodes(current_root)])
 
 
 func _add_camera() -> void:
-	var camera := Camera3D.new()
-	camera.position = Vector3(3.2, 2.6, 5.5)
+	camera = Camera3D.new()
 	add_child(camera)
+	camera.position = Vector3(3.2, 2.6, 5.5)
 	camera.look_at(Vector3(0.0, 0.8, 0.0))
 
 

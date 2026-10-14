@@ -143,7 +143,7 @@ Status: Portable export scope done; Unity is the first engine adapter, followed 
 
 Develop in this order:
 
-1. Three.js adapter hierarchy, transforms, all eleven current Low Poly geometry types, game-metadata preservation, and atomic patch application are implemented with a standalone consumer; the Godot adapter now compiles six Low Poly types and game metadata in a tested standalone project; next expand Godot geometry and patch support, then add Unreal against a real consuming project;
+1. Three.js adapter hierarchy, transforms, all eleven current Low Poly geometry types, game-metadata preservation, and atomic patch application are implemented with a standalone consumer; the Godot adapter now compiles all eleven Low Poly types and game metadata in a tested standalone project; next add Godot patch support, then add Unreal against a real consuming project;
 2. publish adapter setup guides and conformance fixtures for additional engine teams;
 3. validate each engine's metadata and reversible edits through its native asset workflow;
 4. export geometry-preserving GLB with stable semantic node metadata;

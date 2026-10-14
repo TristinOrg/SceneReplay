@@ -96,6 +96,7 @@ def validate_godot_consumer(errors: list[str]) -> None:
         ("Samples/three-consumer/game-metadata.json", "Samples/godot-consumer/examples/character.game-metadata.json"),
         ("Samples/three-consumer/examples/weapon.json", "Samples/godot-consumer/examples/weapon.json"),
         ("Samples/three-consumer/examples/weapon.game-metadata.json", "Samples/godot-consumer/examples/weapon.game-metadata.json"),
+        ("Samples/three-consumer/examples/profiles.json", "Samples/godot-consumer/examples/profiles.json"),
     )
     for source_name, mirror_name in mirrors:
         source = ROOT / source_name

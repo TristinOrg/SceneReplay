@@ -5,13 +5,13 @@ This GDScript adapter compiles `scenereplay.shape/1.0` into a native Godot 4 `No
 ## Supported contract
 
 - Preserves stable node IDs, names, hierarchy, local transforms, and shape types in `scene_replay` node metadata.
-- Compiles cube, sphere, cylinder, capsule, wedge, and frustum shapes into native Godot meshes.
+- Compiles all eleven Low Poly shapes, including extrusion, loft, cage, lathe, and sweep profile geometry, into native Godot meshes.
 - Preserves direct RGBA overrides and resolves palette roles from the `paletteRoles` option.
 - Preserves game tags, anchors, damage zones, collider descriptions, and LOD declarations as node metadata.
-- Validates schema versions, IDs, transforms, colors, frustum dimensions, and metadata bindings before creating nodes.
-- Rejects profile geometries, semantic rigs, and mirror transforms with path-qualified errors.
+- Validates schema versions, IDs, transforms, colors, geometry profiles and budgets, and metadata bindings before creating nodes.
+- Rejects semantic rigs and mirror transforms with path-qualified errors.
 
-Collider and LOD metadata remain descriptive; this increment does not create physics bodies or LOD switching behavior. Patch application and profile geometry are future adapter work.
+Collider and LOD metadata remain descriptive; this adapter does not create physics bodies or LOD switching behavior. Semantic rig compilation and atomic patch application are future adapter work. Profile meshes use polygon triangulation, bounded smoothing, and deterministic sampled loft/cage/sweep construction.
 
 ## Install in a Godot project
 

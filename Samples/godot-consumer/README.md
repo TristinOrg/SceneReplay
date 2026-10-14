@@ -1,6 +1,6 @@
 # Godot consuming project
 
-This standalone Godot 4 project demonstrates the GDScript adapter with the shared SceneReplay character and weapon definitions. It creates editable `Node3D` and `MeshInstance3D` hierarchies, preserves stable IDs and game metadata, and exercises all six geometry types currently supported by the Godot adapter.
+This standalone Godot 4 project demonstrates the GDScript adapter with shared SceneReplay character, weapon, and profile-gallery definitions. It creates editable `Node3D` and `MeshInstance3D` hierarchies, preserves stable IDs and game metadata, and supports all eleven Low Poly geometry types. Run the project and press `1` for the character or `2` for the five-shape profile gallery.
 
 Open `project.godot` in Godot or run the project with `godot --path Samples/godot-consumer`. The automated headless checks run with:
 
