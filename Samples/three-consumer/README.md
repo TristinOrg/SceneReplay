@@ -2,11 +2,12 @@
 
 This Vite application demonstrates the same engine-neutral asset definitions in a Three.js consumer. The Japanese town and inventor workbench are generated from the project's Unity Low Poly preset factories and exported with their matching palettes, so the Unity and Three.js examples start from the same authored data. The town includes six X-axis mirrored instances. The picker also includes a character, weapon, building, profile geometry gallery, and semantic rig fixture.
 
-The checked-in screenshots below are captured from the running Three.js consumer. They show the same SceneReplay definitions that the Unity presets produce; Three.js applies its own renderer and camera.
+The screenshots below use a matched 1600 × 1000 frame, 45° field of view, camera direction, and target framing. The Unity images are rendered by the Unity Editor from the same preset factories that produce the JSON and palettes used by the Three.js consumer; each engine uses its own renderer and lighting.
 
-| Low Poly Japanese Town · 103 authored nodes | Inventor Workbench · 43 authored nodes |
-|---|---|
-| ![Low Poly Japanese Town rendered by the SceneReplay Three.js adapter](screenshots/japanese-town.png) | ![Inventor Workbench rendered by the SceneReplay Three.js adapter](screenshots/inventor-workbench.png) |
+| Shared preset | Unity | Three.js |
+|---|---|---|
+| Low Poly Japanese Town · 103 authored nodes | ![Low Poly Japanese Town rendered in Unity](screenshots/japanese-town-unity.png) | ![Low Poly Japanese Town rendered by the SceneReplay Three.js adapter](screenshots/japanese-town.png) |
+| Inventor Workbench · 43 authored nodes | ![Inventor Workbench rendered in Unity](screenshots/inventor-workbench-unity.png) | ![Inventor Workbench rendered by the SceneReplay Three.js adapter](screenshots/inventor-workbench.png) |
 
 ## Run locally
 

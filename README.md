@@ -55,9 +55,10 @@ npm run dev
 
 The browser sample includes the Unity-authored Japanese Town and Inventor Workbench, along with character, weapon, building, profile geometry, and semantic rig scenes. The town and workbench reuse the exact definitions and palettes from the Unity preset factories, making them a direct cross-engine comparison. Use **Fit view** and **Save PNG** to frame and export a scene.
 
-| Japanese Town | Inventor Workbench |
-|---|---|
-| ![SceneReplay Japanese Town in Three.js](Samples/three-consumer/screenshots/japanese-town.png) | ![SceneReplay Inventor Workbench in Three.js](Samples/three-consumer/screenshots/inventor-workbench.png) |
+| Shared preset | Unity | Three.js |
+|---|---|---|
+| Japanese Town | ![Japanese Town rendered in Unity](Samples/three-consumer/screenshots/japanese-town-unity.png) | ![Japanese Town rendered in Three.js](Samples/three-consumer/screenshots/japanese-town.png) |
+| Inventor Workbench | ![Inventor Workbench rendered in Unity](Samples/three-consumer/screenshots/inventor-workbench-unity.png) | ![Inventor Workbench rendered in Three.js](Samples/three-consumer/screenshots/inventor-workbench.png) |
 
 ### Godot
 

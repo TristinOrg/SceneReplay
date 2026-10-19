@@ -55,9 +55,10 @@ npm run dev
 
 浏览器示例包含 Unity 预设生成的日式小镇和发明家工作台，以及角色、武器、建筑、Profile 几何和语义 Rig 场景。小镇与工作台直接复用 Unity 预设工厂生成的定义和调色板，可用于跨引擎对比。点击 **Fit view** 可适配视角，点击 **Save PNG** 可导出当前画面。
 
-| 日式小镇 | 发明家工作台 |
-|---|---|
-| ![SceneReplay 日式小镇的 Three.js 画面](Samples/three-consumer/screenshots/japanese-town.png) | ![SceneReplay 发明家工作台的 Three.js 画面](Samples/three-consumer/screenshots/inventor-workbench.png) |
+| 共享预设 | Unity | Three.js |
+|---|---|---|
+| 日式小镇 | ![Unity 渲染的日式小镇](Samples/three-consumer/screenshots/japanese-town-unity.png) | ![Three.js 渲染的日式小镇](Samples/three-consumer/screenshots/japanese-town.png) |
+| 发明家工作台 | ![Unity 渲染的发明家工作台](Samples/three-consumer/screenshots/inventor-workbench-unity.png) | ![Three.js 渲染的发明家工作台](Samples/three-consumer/screenshots/inventor-workbench.png) |
 
 ### Godot
 
