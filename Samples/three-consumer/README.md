@@ -2,7 +2,7 @@
 
 This Vite application demonstrates the same engine-neutral asset definitions in a Three.js consumer. The Japanese town and inventor workbench are generated from the project's Unity Low Poly preset factories and exported with their matching palettes, so the Unity and Three.js examples start from the same authored data. The town includes six X-axis mirrored instances. The picker also includes a character, weapon, building, profile geometry gallery, and semantic rig fixture.
 
-The screenshots below use a matched 1600 × 1000 frame, 45° field of view, camera direction, and target framing. The Unity images are rendered by the Unity Editor from the same preset factories that produce the JSON and palettes used by the Three.js consumer; each engine uses its own renderer and lighting.
+The screenshots below use a matched 1600 × 1000 frame, 45° field of view, camera direction, and target framing. The Unity images are rendered by the Unity Editor from the same preset factories that produce the JSON and palettes used by the Three.js consumer; each engine uses its own renderer and lighting. Unity images are horizontally corrected after rendering to account for the different camera handedness, without changing the authored model transforms.
 
 | Shared preset | Unity | Three.js |
 |---|---|---|

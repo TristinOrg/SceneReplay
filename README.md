@@ -53,7 +53,7 @@ npm test
 npm run dev
 ```
 
-The browser sample includes the Unity-authored Japanese Town and Inventor Workbench, along with character, weapon, building, profile geometry, and semantic rig scenes. The town and workbench reuse the exact definitions and palettes from the Unity preset factories, making them a direct cross-engine comparison. Use **Fit view** and **Save PNG** to frame and export a scene.
+The browser sample includes the Unity-authored Japanese Town and Inventor Workbench, along with character, weapon, building, profile geometry, and semantic rig scenes. The town and workbench reuse the exact definitions and palettes from the Unity preset factories, making them a direct cross-engine comparison. Use **Fit view** and **Save PNG** to frame and export a scene. Unity comparison images are horizontally corrected for the engines' different camera handedness; the authored model transforms remain unchanged.
 
 | Shared preset | Unity | Three.js |
 |---|---|---|
